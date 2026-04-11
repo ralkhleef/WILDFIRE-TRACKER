@@ -10,7 +10,6 @@ WildFire-Tracker/
 └── server/
     ├── .env.example
     ├── .gitignore
-    ├── README.md
     ├── package.json
     ├── prisma/
     │   └── schema.prisma
