@@ -143,3 +143,26 @@ Relationship summary:
 - `GET /api/fires` and `GET /api/fires/nearby` can be extended with `?includeExternal=true` to merge placeholder external service responses with database records
 - `GET /api/alerts/local` uses the geolocation helper in [`server/src/utils/geolocation.js`](server/src/utils/geolocation.js) to find nearby fires
 
+
+## Setup
+
+1. `cd server`
+2. `npm install`
+3. `cp .env.example .env`
+4. Update `DATABASE_URL` and `JWT_SECRET` in `.env`
+5. `npx prisma generate`
+6. `npx prisma migrate dev --name init`
+7. `npm run dev`
+
+## Manual Test Cases
+
+Use Postman or Thunder Client for these checks:
+
+- Signup with valid data: `POST /api/auth/signup` with a new email and password should return `201`
+- Signup with duplicate email: send the same signup request again and expect `409`
+- Login with correct password: `POST /api/auth/login` with valid credentials should return `200` and a token
+- Login with wrong password: use the wrong password and expect `401`
+- Protected route without token: `GET /api/auth/me` without `Authorization` header should return `401`
+- Protected route with token: `GET /api/auth/me` with `Bearer <token>` should return the current user
+- Get fires: `GET /api/fires` should return a list response
+- Save location: `POST /api/users/saved-locations` with a token and valid latitude/longitude should return `201`

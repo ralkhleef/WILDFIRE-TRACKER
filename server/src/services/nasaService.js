@@ -1,4 +1,5 @@
 // Placeholder service for fetching and normalizing wildfire event data from NASA EONET.
+// Live NASA integration can be added later after the main backend flow is stable.
 const env = require('../config/env');
 
 const mapNasaEvent = (event) => {

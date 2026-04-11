@@ -14,8 +14,18 @@ const handleValidationErrors = (req, res, next) => {
 };
 
 const signupValidation = [
-  body('email').trim().isEmail().withMessage('A valid email address is required.'),
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required.')
+    .bail()
+    .isEmail()
+    .withMessage('A valid email address is required.')
+    .normalizeEmail(),
   body('password')
+    .notEmpty()
+    .withMessage('Password is required.')
+    .bail()
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long.'),
   body('name')
@@ -27,7 +37,14 @@ const signupValidation = [
 ];
 
 const loginValidation = [
-  body('email').trim().isEmail().withMessage('A valid email address is required.'),
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required.')
+    .bail()
+    .isEmail()
+    .withMessage('A valid email address is required.')
+    .normalizeEmail(),
   body('password').notEmpty().withMessage('Password is required.'),
   handleValidationErrors,
 ];

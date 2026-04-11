@@ -6,6 +6,8 @@ const env = require('../config/env');
 const prisma = require('../config/prisma');
 const ApiError = require('../utils/ApiError');
 
+const normalizeEmail = (email) => email.trim().toLowerCase();
+
 const sanitizeUser = (user) => {
   const { password, ...safeUser } = user;
   return safeUser;
@@ -20,8 +22,10 @@ const createAuthResponse = (user) => ({
 });
 
 const signupUser = async ({ email, password, name }) => {
+  const normalizedEmail = normalizeEmail(email);
+
   const existingUser = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
 
   if (existingUser) {
@@ -32,7 +36,7 @@ const signupUser = async ({ email, password, name }) => {
 
   const user = await prisma.user.create({
     data: {
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       name,
     },
@@ -42,8 +46,10 @@ const signupUser = async ({ email, password, name }) => {
 };
 
 const loginUser = async ({ email, password }) => {
+  const normalizedEmail = normalizeEmail(email);
+
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
 
   if (!user || !user.password) {
@@ -66,16 +72,18 @@ const findOrCreateGoogleUser = async (profile) => {
     throw new ApiError(400, 'Google account did not provide an email address.');
   }
 
+  const normalizedEmail = normalizeEmail(email);
+
   const user = await prisma.user.upsert({
-    where: { email },
+    where: { email: normalizedEmail },
     update: {
       googleId: profile.id,
       name: profile.displayName || undefined,
     },
     create: {
-      email,
+      email: normalizedEmail,
       googleId: profile.id,
-      name: profile.displayName || email.split('@')[0],
+      name: profile.displayName || normalizedEmail.split('@')[0],
     },
   });
 
@@ -83,6 +91,7 @@ const findOrCreateGoogleUser = async (profile) => {
 };
 
 module.exports = {
+  normalizeEmail,
   sanitizeUser,
   signToken,
   createAuthResponse,

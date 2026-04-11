@@ -1,4 +1,5 @@
 // Placeholder service for fetching and normalizing active wildfire data from CAL FIRE.
+// Live CAL FIRE integration can be improved later without changing route/controller logic.
 const crypto = require('crypto');
 
 const env = require('../config/env');
