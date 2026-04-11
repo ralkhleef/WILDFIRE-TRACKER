@@ -1,0 +1,12 @@
+# Ignore installed packages.
+node_modules/
+
+# Ignore local environment secrets.
+.env
+
+# Ignore Prisma local artifacts if generated.
+prisma/dev.db
+prisma/dev.db-journal
+
+# Ignore local logs.
+*.log

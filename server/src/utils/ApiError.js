@@ -1,0 +1,10 @@
+// Provides a consistent custom error type for route handlers and service logic.
+class ApiError extends Error {
+  constructor(statusCode, message, details = null) {
+    super(message);
+    this.statusCode = statusCode;
+    this.details = details;
+  }
+}
+
+module.exports = ApiError;

@@ -1,0 +1,62 @@
+// Prisma schema for the WildFire-Tracker backend.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(cuid())
+  email           String           @unique
+  password        String?
+  name            String?
+  googleId        String?          @unique
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  savedLocations  SavedLocation[]
+  alertPreference AlertPreference?
+}
+
+model SavedLocation {
+  id        String   @id @default(cuid())
+  userId    String
+  label     String?
+  latitude  Float
+  longitude Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AlertPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  radius    Int      @default(25)
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WildfireRecord {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  latitude    Float
+  longitude   Float
+  size        Float?
+  containment Int?
+  source      String   @default("internal")
+  status      String?
+  reportedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([latitude, longitude])
+}
