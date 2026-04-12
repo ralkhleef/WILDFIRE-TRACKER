@@ -1,6 +1,6 @@
 ## Project Overview
 
-WildFire-Tracker is a real-time wildfire tracking web application that will display active fires on a map, provide location-based alerts, and surface details such as fire size, containment, and air quality using public wildfire data sources.
+WildFire-Tracker is a real-time wildfire tracking application that will display active fires on a map, provide location-based alerts, and surface details such as fire size, containment, and air quality using public wildfire data sources.
 
 ## Backend Folder Structure
 
