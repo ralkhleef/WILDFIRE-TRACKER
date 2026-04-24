@@ -14,6 +14,10 @@ module.exports = {
   googleCallbackUrl:
     process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5001/api/auth/google/callback',
   calfireApiUrl: process.env.CALFIRE_API_URL || '',
-  nasaApiUrl: process.env.NASA_API_URL || '',
+  nasaFirmsApiUrl: process.env.NASA_FIRMS_API_URL || '',
+  nasaFirmsMapKey: process.env.NASA_FIRMS_MAP_KEY || '',
+  nasaFirmsSource: process.env.NASA_FIRMS_SOURCE || '',
+  nasaFirmsArea: process.env.NASA_FIRMS_AREA || '',
+  nasaFirmsDayRange: process.env.NASA_FIRMS_DAY_RANGE || '',
   defaultAlertRadiusMiles: Number(process.env.DEFAULT_ALERT_RADIUS_MILES) || 25,
 };
