@@ -1,46 +1,50 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/Navbar.jsx";
+import Home from "./pages/Home.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import Signup from "./pages/Signup.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import MapView from "./pages/MapView.jsx";
+import Profile from "./pages/Profile.jsx";
+import Settings from "./pages/Settings.jsx";
+import HelpResources from "./pages/HelpResources.jsx";
+import Offline from "./pages/Offline.jsx";
+import FireDetails from "./pages/FireDetails.jsx";
 import "./App.css";
 
-function Navbar() {
+function Placeholder({ title }) {
   return (
-    <nav style={{ display: "flex", gap: "20px", padding: "20px" }}>
-      <Link to="/">Home</Link>
-      <Link to="/map">Map</Link>
-      <Link to="/alerts">Alerts</Link>
-      <Link to="/about">About</Link>
-    </nav>
+    <main style={{ padding: "1.5rem" }}>
+      <h1>{title}</h1>
+    </main>
   );
 }
 
-function Home() {
-  return <h1>Home Page</h1>;
-}
-
-function Map() {
-  return <h1>Map Page</h1>;
-}
-
-function Alerts() {
-  return <h1>Alerts Page</h1>;
-}
-
-function About() {
-  return <h1>About Page</h1>;
-}
-
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/map" element={<Map />} />
-        <Route path="/alerts" element={<Alerts />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
+      <div className="appShell">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/map" element={<MapView />} />
+          <Route path="/alerts" element={<Placeholder title="Alerts" />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/help" element={<HelpResources />} />
+          <Route path="/offline" element={<Offline />} />
+          <Route path="/fire/:id" element={<FireDetails />} />
+          <Route
+            path="/saved-locations"
+            element={<Placeholder title="Saved Locations" />}
+          />
+          <Route path="/fire-data" element={<Placeholder title="Fire Data" />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }
-
-export default App;

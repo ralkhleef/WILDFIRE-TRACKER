@@ -1,0 +1,143 @@
+.dashboardShell {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboardSidebar {
+  width: 280px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--code-bg);
+  padding: 1.25rem 1rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.sidebarHeading {
+  margin: 0;
+  font-family: var(--heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-h);
+}
+
+.sidebarBody {
+  margin: 0;
+  min-height: 4rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.dashboardMain {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 1.75rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.dashboardPageTitle {
+  margin: 0;
+  font-family: var(--heading);
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-h);
+}
+
+.dashboardWidgetRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.dashboardWidget {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  min-height: 180px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dashboardWidget .wildfireMapCard {
+  flex: 1;
+}
+
+.dashboardWidgetWide {
+  min-height: 220px;
+}
+
+.widgetLabel {
+  margin: 0;
+  font-family: var(--heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.widgetPlaceholder {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--code-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 960px) {
+  .dashboardShell {
+    flex-direction: column;
+  }
+
+  .dashboardSidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .sidebarSection {
+    flex: 1 1 200px;
+  }
+
+  .dashboardWidgetRow {
+    grid-template-columns: 1fr;
+  }
+}

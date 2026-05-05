@@ -1,4 +1,3 @@
-// src/pages/Map.jsx
-export default function Map() {
-  return <h1>Wildfire Map</h1>;
+export default function Settings() {
+  return <h1>Settings</h1>;
 }

@@ -1,3 +1,12 @@
+.appShell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;

@@ -1,0 +1,177 @@
+.wildfireMapCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.wildfireMapHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.wildfireMapTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.wildfireMapControls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mapControlLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.mapRadiusInput,
+.mapCoordInput {
+  font: inherit;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  box-sizing: border-box;
+}
+
+.mapRadiusInput {
+  width: 76px;
+}
+
+.mapApplyBtn {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 0.38rem 0.72rem;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.mapSecondaryBtn {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.38rem 0.72rem;
+  background: var(--code-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.mapSecondaryBtn:hover {
+  background: var(--social-bg);
+}
+
+.mapApplyBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.mapStatusText {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.mapErrorText {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b91c1c;
+}
+
+.mapDetailsLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.mapDetailsLink:hover {
+  text-decoration: underline;
+}
+
+.manualLocationForm {
+  display: grid;
+  grid-template-columns: auto minmax(110px, 1fr) auto minmax(110px, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.wildfireMapContainer {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.compactMap {
+  height: 260px;
+}
+
+.fullMap {
+  height: min(65vh, 620px);
+}
+
+.wildfireMapContainer .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+.mapResultsSection {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  padding: 0.65rem 0.75rem;
+}
+
+.mapResultsTitle {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  color: var(--text-h);
+}
+
+.mapResultsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.mapResultsItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.82rem;
+}
+
+.mapResultsItem span {
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .manualLocationForm {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .wildfireMapControls {
+    width: 100%;
+  }
+}
