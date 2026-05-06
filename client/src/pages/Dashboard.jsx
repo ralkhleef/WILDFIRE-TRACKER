@@ -1,6 +1,41 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import "./Dashboard.css";
 import WildfireMap from "../components/WildfireMap.jsx";
 
+const apiBase = import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
+
+function RecentFires() {
+  const [fires, setFires] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${apiBase}/api/fires`)
+      .then((r) => r.json())
+      .then((b) => setFires(Array.isArray(b?.data) ? b.data.slice(0, 5) : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p style={{ margin: 0, color: "var(--text)", fontSize: "0.9rem" }}>Loading fires...</p>;
+  if (!fires.length) return <p style={{ margin: 0, color: "var(--text)", fontSize: "0.9rem" }}>No fires found.</p>;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      {fires.map((fire) => (
+        <Link
+          key={fire.id}
+          to={`/fire/${fire.id}`}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.6rem 0.75rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--code-bg)", textDecoration: "none", color: "var(--text-h)" }}
+        >
+          <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{fire.name || "Unnamed fire"}</span>
+          <span style={{ fontSize: "0.82rem", color: "var(--text)" }}>{fire.location || "Unknown"}</span>
+          <span style={{ fontSize: "0.78rem", color: "var(--accent)", fontWeight: 600 }}>{typeof fire.containment === "number" ? `${fire.containment}% contained` : fire.status || ""}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
 export default function Dashboard() {
   return (
     <div className="dashboardShell">
@@ -42,11 +77,9 @@ export default function Dashboard() {
         </div>
 
         <article className="dashboardWidget dashboardWidgetWide">
-          <h2 className="widgetLabel">Recent alerts list</h2>
-          <p className="widgetPlaceholder">
-            Scrollable list of recent alerts and updates.
-          </p>
-        </article>
+            <h2 className="widgetLabel">Recent fires, click for details</h2>
+            <RecentFires />
+          </article>
       </main>
     </div>
   );
