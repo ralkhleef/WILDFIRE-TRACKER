@@ -235,7 +235,7 @@ export default function EvacuationResources() {
         </header>
 
         <form className="evacSearchBanner" onSubmit={handleFindResources}>
-          <label htmlFor="evac-find-near">Find resources near</label>
+          <label htmlFor="evac-find-near">Find shelters near</label>
           <input
             id="evac-find-near"
             className="evacSearchInput"

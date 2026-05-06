@@ -72,7 +72,6 @@ export default function Navbar() {
     { to: "/help", label: "Help Resources" },
     { to: "/offline", label: "Offline" },
     { to: "/saved-locations", label: "Saved Locations" },
-    { to: "/fire-data", label: "Fire Data" },
     { to: "/", label: "Login" },
     { to: "/signup", label: "Signup" },
     

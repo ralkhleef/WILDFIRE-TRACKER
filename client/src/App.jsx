@@ -45,7 +45,6 @@ export default function App() {
             path="/saved-locations"
             element={<Placeholder title="Saved Locations" />}
           />
-          <Route path="/fire-data" element={<Placeholder title="Fire Data" />} />
         </Routes>
       </div>
     </BrowserRouter>
