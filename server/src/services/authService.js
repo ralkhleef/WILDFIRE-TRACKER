@@ -21,15 +21,27 @@ const createAuthResponse = (user) => ({
   user: sanitizeUser(user),
 });
 
-const signupUser = async ({ email, password, name }) => {
+const signupUser = async ({ email, password, name, username }) => {
   const normalizedEmail = normalizeEmail(email);
 
-  const existingUser = await prisma.user.findUnique({
+  const existingEmail = await prisma.user.findUnique({
     where: { email: normalizedEmail },
   });
 
-  if (existingUser) {
+  if (existingEmail) {
     throw new ApiError(409, 'A user with that email already exists.');
+  }
+
+  let normalizedUsername;
+  if (typeof username === 'string' && username.trim()) {
+    normalizedUsername = username.trim().toLowerCase();
+    const existingUsername = await prisma.user.findUnique({
+      where: { username: normalizedUsername },
+    });
+
+    if (existingUsername) {
+      throw new ApiError(409, 'That username is already taken.');
+    }
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -37,8 +49,9 @@ const signupUser = async ({ email, password, name }) => {
   const user = await prisma.user.create({
     data: {
       email: normalizedEmail,
+      username: normalizedUsername || null,
       password: hashedPassword,
-      name,
+      name: typeof name === 'string' ? name.trim() || null : null,
     },
   });
 

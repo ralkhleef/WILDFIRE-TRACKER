@@ -5,6 +5,7 @@ const ApiError = require('../utils/ApiError');
 const profileSelect = {
   id: true,
   email: true,
+  username: true,
   name: true,
   googleId: true,
   createdAt: true,

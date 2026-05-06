@@ -29,10 +29,21 @@ const signupValidation = [
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long.'),
   body('name')
-    .optional()
     .trim()
+    .notEmpty()
+    .withMessage('Full name is required.')
+    .bail()
     .isLength({ min: 1, max: 80 })
-    .withMessage('Name must be between 1 and 80 characters long.'),
+    .withMessage('Full name must be between 1 and 80 characters long.'),
+  body('username')
+    .trim()
+    .notEmpty()
+    .withMessage('Username is required.')
+    .bail()
+    .isLength({ min: 3, max: 32 })
+    .withMessage('Username must be between 3 and 32 characters long.')
+    .matches(/^[a-zA-Z0-9_-]+$/)
+    .withMessage('Username may only contain letters, digits, underscores, and hyphens.'),
   handleValidationErrors,
 ];
 

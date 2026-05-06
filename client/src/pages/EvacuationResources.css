@@ -1,0 +1,427 @@
+.evacShell {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.evacSidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #e8eef5;
+  border-right: 1px solid var(--border);
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-sizing: border-box;
+}
+
+.evacBrand {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-h);
+  margin: 0;
+  padding: 0 0.35rem;
+}
+
+.evacSidebarSearch {
+  font: inherit;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text-h);
+  box-sizing: border-box;
+}
+
+.evacNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.evacNav a {
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-h);
+  padding: 0.5rem 0.65rem;
+  border-radius: 10px;
+}
+
+.evacNav a:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.evacNav a.active {
+  background: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.evacMain {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 1.25rem 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.evacMainHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.evacMainTitle {
+  margin: 0;
+  font-size: 1.65rem;
+  font-family: var(--heading);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-h);
+}
+
+.evacMainActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.evacToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.evacToggle input {
+  width: 42px;
+  height: 22px;
+  accent-color: #22c55e;
+}
+
+.evacShareBtn {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+}
+
+.evacShareBtn:hover {
+  opacity: 0.92;
+}
+
+.evacSearchBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.evacSearchBanner label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-h);
+}
+
+.evacSearchInput {
+  flex: 1;
+  min-width: 180px;
+  font: inherit;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text-h);
+  box-sizing: border-box;
+}
+
+.evacSearchBtn {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 0.95rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.evacMidGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.evacMapPanel {
+  background: #dff3df;
+  border: 1px solid #bcd8bc;
+  border-radius: 16px;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 320px;
+}
+
+.evacMapPanel h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-h);
+}
+
+.evacMapSub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.evacMapViewport {
+  position: relative;
+  flex: 1;
+  min-height: 260px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #bcd8bc;
+}
+
+.evacMapViewport .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.evacLegend {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 500;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.72rem;
+  color: var(--text-h);
+}
+
+.evacFireLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.evacFireLink:hover {
+  text-decoration: underline;
+}
+
+.evacFiresMiniPanel {
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+
+.evacFiresMiniPanel h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  color: var(--text-h);
+}
+
+.evacFiresList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.evacFireMiniItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+}
+
+.evacFireMiniLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.evacFireMiniLink:hover {
+  text-decoration: underline;
+}
+
+.evacFireErrorText {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b91c1c;
+}
+
+.evacListPanel {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  padding: 0.85rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 320px;
+}
+
+.evacListPanel h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-h);
+}
+
+.evacListSub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.evacShelterCard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg);
+}
+
+.evacShelterCard h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  color: var(--text-h);
+}
+
+.evacShelterCard address {
+  margin: 0 0 0.35rem;
+  font-size: 0.83rem;
+  font-style: normal;
+  color: var(--text);
+}
+
+.evacShelterCard span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.evacMoreBox {
+  border-radius: 12px;
+  padding: 0.65rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text);
+  background: #e8f4ff;
+  border: 1px dashed #93c5fd;
+}
+
+.evacEmergencyPanel {
+  border-radius: 16px;
+  background: #ffe4e6;
+  border: 1px solid #fecdd3;
+  padding: 1rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.evacEmergencyHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.evacEmergencyHeader h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-h);
+}
+
+.evacEmergencyHeader span {
+  font-size: 0.72rem;
+  color: var(--text);
+}
+
+.evacEmergencySub {
+  margin: 0 0 0.75rem;
+  font-size: 0.84rem;
+  color: var(--text);
+}
+
+.evacEmergencyList {
+  list-style: decimal;
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.evacEmergencyList li {
+  font-size: 0.9rem;
+  color: var(--text-h);
+}
+
+.evacEmergencyList a {
+  color: #dc2626;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.evacEmergencyList a:hover {
+  text-decoration: underline;
+}
+
+.evacHint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+@media (max-width: 960px) {
+  .evacShell {
+    flex-direction: column;
+  }
+
+  .evacSidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .evacNav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .evacMidGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -8,6 +8,7 @@ import MapView from "./pages/MapView.jsx";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import HelpResources from "./pages/HelpResources.jsx";
+import EvacuationResources from "./pages/EvacuationResources.jsx";
 import Offline from "./pages/Offline.jsx";
 import FireDetails from "./pages/FireDetails.jsx";
 import "./App.css";
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/help" element={<HelpResources />} />
+          <Route path="/resources" element={<EvacuationResources />} />
           <Route path="/offline" element={<Offline />} />
           <Route path="/fire/:id" element={<FireDetails />} />
           <Route

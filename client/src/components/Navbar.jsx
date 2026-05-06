@@ -63,19 +63,19 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const menuItems = [
-    { to: "/", label: "Login" },
-    { to: "/signup", label: "Signup" },
-    { to: "/home", label: "Home" },
     { to: "/dashboard", label: "Dashboard" },
     { to: "/map", label: "Map" },
     { to: "/alerts", label: "Alerts" },
+    { to: "/resources", label: "Evacuation resources" },
     { to: "/profile", label: "Profile" },
     { to: "/settings", label: "Settings" },
     { to: "/help", label: "Help Resources" },
     { to: "/offline", label: "Offline" },
     { to: "/saved-locations", label: "Saved Locations" },
     { to: "/fire-data", label: "Fire Data" },
-    { to: "/map", label: "Fire Details (open from map)" },
+    { to: "/", label: "Login" },
+    { to: "/signup", label: "Signup" },
+    
   ];
 
   return (
@@ -95,7 +95,7 @@ export default function Navbar() {
           <nav id="hamburger-route-menu" className="menuDropdown" aria-label="All routes">
             {menuItems.map((item) => (
               <Link
-                key={item.to}
+                key={`${item.to}:${item.label}`}
                 to={item.to}
                 className="menuItem"
                 onClick={() => setMenuOpen(false)}
