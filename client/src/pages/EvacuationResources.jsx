@@ -1,19 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
+import { useEffect, useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import "./EvacuationResources.css";
+import WildfireMap from "../components/WildfireMap.jsx";
 
 const DEFAULT_CENTER = { lat: 34.0522, lng: -118.2437 };
 const FIRE_RADIUS_MI = 60;
 
 const apiBase =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
-
-const MOCK_TEMPLATE = [
-  { id: "s1", name: "Shelter 1", color: "#dc2626", offsetLat: 0.018, offsetLng: 0.012 },
-  { id: "s2", name: "Shelter 2", color: "#ea580c", offsetLat: -0.015, offsetLng: 0.022 },
-  { id: "s3", name: "Shelter 3", color: "#2563eb", offsetLat: 0.022, offsetLng: -0.018 },
-];
 
 function milesBetween(aLat, aLng, bLat, bLng) {
   const R = 3959;
@@ -39,14 +33,6 @@ function isValidLatLng(latitude, longitude) {
   );
 }
 
-function RecenterEvac({ center }) {
-  const map = useMap();
-  useEffect(() => {
-    if (!center) return;
-    map.setView([center.lat, center.lng], 11);
-  }, [center, map]);
-  return null;
-}
 
 async function nominatimSearch(query) {
   const q = encodeURIComponent(query.trim());
@@ -69,6 +55,8 @@ export default function EvacuationResources() {
   const [nearbyFires, setNearbyFires] = useState([]);
   const [firesLoading, setFiresLoading] = useState(false);
   const [firesError, setFiresError] = useState("");
+  const [shelters, setShelters] = useState([]);
+  const [sheltersLoading, setSheltersLoading] = useState(false);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -143,22 +131,47 @@ export default function EvacuationResources() {
       cancelled = true;
     };
   }, [center.lat, center.lng]);
+  useEffect(() => {
+  let cancelled = false;
+  async function loadShelters() {
+    setSheltersLoading(true);
+    const q = `[out:json][timeout:25];(node["amenity"="shelter"](around:50000,${center.lat},${center.lng});node["social_facility"="evacuation_centre"](around:50000,${center.lat},${center.lng});node["emergency"="assembly_point"](around:50000,${center.lat},${center.lng});node["amenity"="community_centre"](around:50000,${center.lat},${center.lng});way["amenity"="shelter"](around:50000,${center.lat},${center.lng}););out center body;`;
+    try {
+      const res = await fetch("https://overpass-api.de/api/interpreter", {
+        method: "POST",
+        body: `data=${encodeURIComponent(q)}`,
+      });
+      const data = await res.json();
+      if (cancelled) return;
+      const results = (data.elements || [])
+        .map((el) => {
+          const lat = el.lat ?? el.center?.lat;
+          const lng = el.lon ?? el.center?.lon;
+          if (!lat || !lng) return null;
+          return {
+            id: `osm-${el.id}`,
+            name: el.tags?.name || "Emergency Shelter",
+            latitude: Number(lat),
+            longitude: Number(lng),
+            address: [el.tags?.["addr:street"], el.tags?.["addr:city"]]
+              .filter(Boolean).join(", ") || null,
+            distanceMi: milesBetween(center.lat, center.lng, Number(lat), Number(lng)),
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.distanceMi - b.distanceMi);
+      setShelters(results);
+    } catch {
+      setShelters([]);
+    } finally {
+      if (!cancelled) setSheltersLoading(false);
+    }
+  }
+  loadShelters();
+  return () => { cancelled = true; };
+}, [center.lat, center.lng]);
 
-  const shelters = useMemo(() => {
-    return MOCK_TEMPLATE.map((s) => {
-      const latitude = center.lat + s.offsetLat;
-      const longitude = center.lng + s.offsetLng;
-      const distanceMi = milesBetween(center.lat, center.lng, latitude, longitude);
-      const address = `${latitude.toFixed(3)}, ${longitude.toFixed(3)} (demo)`;
-      return {
-        ...s,
-        latitude,
-        longitude,
-        distanceMi,
-        address,
-      };
-    }).sort((a, b) => a.distanceMi - b.distanceMi);
-  }, [center]);
+  const shelterKey = `${center.lat},${center.lng}`;
 
   async function handleFindResources(e) {
     e.preventDefault();
@@ -288,107 +301,39 @@ export default function EvacuationResources() {
         <div className="evacMidGrid">
           <section className="evacMapPanel">
             <h3>Map</h3>
-            <p className="evacMapSub">Nearby evacuation centers (demo locations)</p>
-            <div className="evacMapViewport">
-              <MapContainer
-                center={[center.lat, center.lng]}
-                zoom={11}
-                scrollWheelZoom
-                style={{ height: "100%", width: "100%" }}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <RecenterEvac center={center} />
-
-                <CircleMarker
-                  center={[center.lat, center.lng]}
-                  radius={8}
-                  pathOptions={{ color: "#111827", fillColor: "#111827", fillOpacity: 0.85 }}
-                >
-                  <Popup>Your search center</Popup>
-                </CircleMarker>
-
-                {shelters.map((s) => (
-                  <CircleMarker
-                    key={s.id}
-                    center={[s.latitude, s.longitude]}
-                    radius={10}
-                    pathOptions={{
-                      color: s.color,
-                      fillColor: s.color,
-                      fillOpacity: 0.8,
-                    }}
-                  >
-                    <Popup>{s.name}</Popup>
-                  </CircleMarker>
-                ))}
-
-                {nearbyFires.map((fire) => {
-                  const latitude = Number(fire.latitude);
-                  const longitude = Number(fire.longitude);
-                  if (!isValidLatLng(latitude, longitude)) return null;
-
-                  const containment =
-                    typeof fire.containment === "number"
-                      ? `${fire.containment}% contained`
-                      : null;
-
-                  return (
-                    <CircleMarker
-                      key={`evac-fire-${fire.id}`}
-                      center={[latitude, longitude]}
-                      radius={7}
-                      pathOptions={{
-                        color: "#dc2626",
-                        fillColor: "#ef4444",
-                        fillOpacity: 0.8,
-                      }}
-                    >
-                      <Popup>
-                        <strong>{fire.name || "Wildfire"}</strong>
-                        <br />
-                        {fire.location || "Unknown location"}
-                        <br />
-                        Source: {fire.source || "Unknown"}
-                        <br />
-                        {fire.status ? `Status: ${fire.status}` : "Status unavailable"}
-                        {containment ? (
-                          <>
-                            <br />
-                            {containment}
-                          </>
-                        ) : null}
-                        <br />
-                        <Link
-                          to={`/fire/${encodeURIComponent(fire.id)}`}
-                          className="evacFireLink"
-                        >
-                          View details
-                        </Link>
-                      </Popup>
-                    </CircleMarker>
-                  );
-                })}
-              </MapContainer>
-              <div className="evacLegend">
-                Legend: pin = open shelter / center; red pin = wildfire incident
-              </div>
-            </div>
+              <WildfireMap
+              title="Nearby evacuation centers"
+              initialCenter={{ latitude: center.lat, longitude: center.lng }}
+              onLocationChange={(lat, lng) => setCenter({ lat, lng })}
+            />
           </section>
-
+ 
           <section className="evacListPanel">
             <h3>Shelters</h3>
-            <p className="evacListSub">Sorted by distance</p>
-            <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem", maxHeight: 280 }}>
-              {shelters.map((s) => (
-                <article key={s.id} className="evacShelterCard">
-                  <h4>{s.name}</h4>
-                  <address>{s.address}</address>
-                  <span>{s.distanceMi.toFixed(1)} mi away</span>
-                </article>
-              ))}
+            <p className="evacListSub">Sorted by distance · via OpenStreetMap</p>
+            <div key={shelterKey} style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem", maxHeight: 280 }}>              {sheltersLoading ? (
+                <p className="evacHint">Loading shelters...</p>
+              ) : shelters.length === 0 ? (
+                <p className="evacHint">No shelters found in this area.</p>
+              ) : (
+                shelters.map((s) => (
+                  <article key={s.id} className="evacShelterCard">
+                    <h4>{s.name}</h4>
+                    {s.address ? <address>{s.address}</address> : null}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>{s.distanceMi.toFixed(1)} mi away</span>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${s.latitude},${s.longitude}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ fontSize: "0.78rem", color: "var(--accent)", textDecoration: "none" }}
+                      >
+                        Open in Google Maps ↗
+                      </a>
+                    </div>
+                  </article>
+                ))
+              )}
             </div>
             <div className="evacMoreBox">More shelters (scroll)</div>
 

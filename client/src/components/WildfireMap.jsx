@@ -39,8 +39,8 @@ function isValidLatLng(latitude, longitude) {
   );
 }
 
-export default function WildfireMap({ compact = false, title }) {
-  const [center, setCenter] = useState(DEFAULT_CENTER);
+export default function WildfireMap({ compact = false, title, initialCenter, onLocationChange }) {
+  const [center, setCenter] = useState(initialCenter || DEFAULT_CENTER);
   const [radius, setRadius] = useState(DEFAULT_RADIUS_MILES);
   const [fires, setFires] = useState([]);
   const [status, setStatus] = useState("Requesting your location...");
@@ -99,6 +99,11 @@ export default function WildfireMap({ compact = false, title }) {
   }
 
   useEffect(() => {
+    if (initialCenter) {
+      setStatus("Using provided location.");
+      fetchNearbyFires(initialCenter.latitude, initialCenter.longitude, radius);
+      return;
+    }
     if (!navigator.geolocation) {
       setStatus("Geolocation is not supported in this browser.");
       setShowManualLocation(true);
@@ -126,6 +131,12 @@ export default function WildfireMap({ compact = false, title }) {
     // We intentionally run this once on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    if (!initialCenter) return;
+    setCenter(initialCenter);
+    fetchNearbyFires(initialCenter.latitude, initialCenter.longitude, radius);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialCenter?.latitude, initialCenter?.longitude]);
 
   function handleManualSubmit(event) {
     event.preventDefault();
@@ -139,6 +150,7 @@ export default function WildfireMap({ compact = false, title }) {
     setCenter(parsedManualCoords);
     setStatus("Using manual location.");
     fetchNearbyFires(parsedManualCoords.latitude, parsedManualCoords.longitude);
+    if (onLocationChange) onLocationChange(parsedManualCoords.latitude, parsedManualCoords.longitude);
   }
 
   function handleRadiusApply() {
