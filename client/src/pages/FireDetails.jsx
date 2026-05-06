@@ -158,13 +158,13 @@ export default function FireDetails() {
         <h2 className="fireSidebarTitle">Fire Details</h2>
         <ul className="fireSidebarList">
           <li><strong>{fire.name || "Unnamed wildfire"}</strong></li>
-          <li>Active fires</li>
-          <li>Containment status</li>
-          <li>Fire size & acreage</li>
-          <li>Recent notifications</li>
-          <li>Nearby alerts</li>
-          <li>Evacuation warnings</li>
-          <li>Nearby fires</li>
+          <li>Status: {fire.status || "Unknown"}</li>
+          <li>Source: {fire.source || "Unknown"}</li>
+          <li>Location: {fire.location || "Unknown"}</li>
+          <li>Acreage: {typeof fire.size === "number" ? `${fire.size.toLocaleString()} acres` : "N/A"}</li>
+          <li>Containment: {typeof fire.containment === "number" ? `${fire.containment}%` : "N/A"}</li>
+          <li>Reported: {fire.reportedAt ? new Date(fire.reportedAt).toLocaleDateString() : "N/A"}</li>
+          <li>Nearby fires: {nearby.length}</li>
         </ul>
       </aside>
 
