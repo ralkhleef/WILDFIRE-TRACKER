@@ -12,6 +12,7 @@ import EvacuationResources from "./pages/EvacuationResources.jsx";
 import Offline from "./pages/Offline.jsx";
 import FireDetails from "./pages/FireDetails.jsx";
 import "./App.css";
+import Alerts from "./pages/Alerts.jsx";
 
 function Placeholder({ title }) {
   return (
@@ -33,7 +34,7 @@ export default function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/map" element={<MapView />} />
-          <Route path="/alerts" element={<Placeholder title="Alerts" />} />
+          <Route path="/alerts" element={<Alerts />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/help" element={<HelpResources />} />

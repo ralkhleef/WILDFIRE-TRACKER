@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./EvacuationResources.css";
 import WildfireMap from "../components/WildfireMap.jsx";
 
@@ -215,49 +215,6 @@ export default function EvacuationResources() {
 
   return (
     <div className="evacShell">
-      <aside className="evacSidebar" aria-label="App navigation">
-        <p className="evacBrand">Wildfire</p>
-        <input
-          className="evacSidebarSearch"
-          type="search"
-          placeholder="Search fires..."
-          aria-label="Search fires"
-        />
-        <nav className="evacNav">
-          <NavLink
-            to="/dashboard"
-            end
-            className={({ isActive }) => (isActive ? "active" : undefined)}
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/map"
-            className={({ isActive }) => (isActive ? "active" : undefined)}
-          >
-            Map
-          </NavLink>
-          <NavLink
-            to="/alerts"
-            className={({ isActive }) => (isActive ? "active" : undefined)}
-          >
-            Alerts
-          </NavLink>
-          <NavLink
-            to="/resources"
-            className={({ isActive }) => (isActive ? "active" : undefined)}
-          >
-            Resources
-          </NavLink>
-          <NavLink
-            to="/settings"
-            className={({ isActive }) => (isActive ? "active" : undefined)}
-          >
-            Settings
-          </NavLink>
-        </nav>
-      </aside>
-
       <main className="evacMain">
         <header className="evacMainHeader">
           <h1 className="evacMainTitle">Evacuation resources</h1>
@@ -376,7 +333,6 @@ export default function EvacuationResources() {
         <section className="evacEmergencyPanel">
           <div className="evacEmergencyHeader">
             <h3>Emergency contacts</h3>
-            <span>Tap to call (wireframe)</span>
           </div>
           <p className="evacEmergencySub">Save these numbers offline if possible.</p>
           <ol className="evacEmergencyList">

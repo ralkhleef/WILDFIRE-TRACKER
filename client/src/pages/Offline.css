@@ -1,0 +1,267 @@
+.offlineShell {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.offlineMain {
+  flex: 1;
+  padding: 1.5rem clamp(1rem, 3vw, 2rem);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+}
+
+/* Status banner */
+.offlineStatusBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.offlineStatusBanner--offline {
+  background: #fff1f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+.offlineStatusBanner--online {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.offlineStatusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.offlineStatusBanner--offline .offlineStatusDot { background: #ef4444; }
+.offlineStatusBanner--online .offlineStatusDot  { background: #22c55e; }
+
+.offlineGoLiveBtn {
+  margin-left: auto;
+  font-weight: 600;
+  color: #166534;
+  text-decoration: none;
+  font-size: 0.88rem;
+}
+
+.offlineGoLiveBtn:hover { text-decoration: underline; }
+
+/* Hero */
+.offlineHero {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+.offlineHeroIcon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+
+.offlineHeroTitle {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-h);
+}
+
+.offlineHeroSub {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Grid */
+.offlineGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 760px) {
+  .offlineGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards */
+.offlineCard {
+  border-radius: 14px;
+  border: 1.5px solid;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.offlineCard--red {
+  background: #fff1f2;
+  border-color: #fca5a5;
+}
+
+.offlineCard--amber {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.offlineCard--neutral {
+  background: var(--bg);
+  border-color: var(--border);
+}
+
+.offlineCardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.offlineCardSub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+/* Contact list */
+.offlineContactList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.offlineContactLink {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid #fca5a5;
+  transition: opacity 0.15s;
+}
+
+.offlineContactLink:hover { opacity: 0.8; }
+
+.offlineContactIcon { font-size: 1.1rem; }
+
+.offlineContactLink span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.offlineContactLink strong {
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.offlineContactDesc {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+/* Tips list */
+.offlineTipsList {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.offlineTipsList li {
+  font-size: 0.88rem;
+  color: #374151;
+  line-height: 1.45;
+}
+
+/* Cached fires */
+.offlineFireList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.offlineFireItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--code-bg);
+}
+
+.offlineFireName {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.offlineFireLocation {
+  font-size: 0.8rem;
+  color: var(--text);
+  flex: 1;
+}
+
+.offlineFireContainment {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.offlineEmptyNote {
+  font-size: 0.82rem;
+  color: var(--text);
+  padding: 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* External links */
+.offlineLinkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.offlineExternalLink {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--code-bg);
+}
+
+.offlineExternalLink:hover { text-decoration: underline; }

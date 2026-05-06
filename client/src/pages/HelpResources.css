@@ -1,0 +1,156 @@
+.helpShell {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.helpMain {
+  flex: 1;
+  padding: 1.5rem clamp(1rem, 3vw, 2rem);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+}
+
+.helpHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.helpTitle {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-h);
+}
+
+.helpSub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.helpGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 760px) {
+  .helpGrid { grid-template-columns: 1fr; }
+}
+
+.helpCard {
+  border-radius: 14px;
+  border: 1.5px solid;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.helpCard--red    { background: #fff1f2; border-color: #fca5a5; }
+.helpCard--amber  { background: #fffbeb; border-color: #fde68a; }
+.helpCard--blue   { background: #eff6ff; border-color: #bfdbfe; }
+.helpCard--neutral { background: var(--bg); border-color: var(--border); }
+
+.helpCardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.helpCardSub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.helpLinkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.helpExternalLink {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.6);
+}
+
+.helpExternalLink:hover { text-decoration: underline; }
+
+.helpTipsList {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.helpTipsList li {
+  font-size: 0.88rem;
+  color: #374151;
+  line-height: 1.45;
+}
+
+.helpContactList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.helpContactLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid #fca5a5;
+  transition: opacity 0.15s;
+}
+
+.helpContactLink:hover { opacity: 0.8; }
+
+.helpContactLink strong {
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.helpContactLink span {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.helpOfflineNote {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--code-bg);
+  font-size: 0.88rem;
+  color: var(--text);
+}

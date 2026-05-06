@@ -1,3 +1,58 @@
+# How to Run Locally
+
+## Terminal 1: Backend
+
+```bash
+cd server
+npm run dev
+```
+
+Leave this running. You should see:
+```
+WildFire-Tracker backend listening on port 5001
+```
+
+---
+
+## Terminal 2: Frontend
+
+```bash
+cd client
+npm run dev
+```
+
+Leave this running. Open the URL it gives you (e.g. `http://localhost:5173`).
+
+---
+
+## Seed the database (run once)
+
+In the backend terminal, stop the server with `Ctrl+C`, then run:
+
+```bash
+npm run seed
+```
+
+You should see:
+```
+Seeded 3 wildfire records.
+```
+
+Then start the server again:
+
+```bash
+npm run dev
+```
+
+---
+
+## Notes
+
+- Both terminals must stay open while developing
+- Backend runs on port `5001`
+- Frontend runs on port `5173` (or `5174`, `5175` if taken)
+- If you close a terminal, restart it with the same commands above
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

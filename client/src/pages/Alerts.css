@@ -1,0 +1,260 @@
+.alertsShell {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.alertsMain {
+  flex: 1;
+  padding: 1.5rem 1.75rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.alertsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.alertsTitle {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-h);
+}
+
+.alertsNotifToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-h);
+  cursor: pointer;
+  user-select: none;
+}
+
+.alertsNotifToggle input {
+  display: none;
+}
+
+.alertsToggleTrack {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  background: var(--border);
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+.alertsNotifToggle input:checked + .alertsToggleTrack {
+  background: #22c55e;
+}
+
+.alertsToggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.alertsNotifToggle input:checked + .alertsToggleTrack .alertsToggleThumb {
+  transform: translateX(18px);
+}
+
+.alertsNotifLabel {
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.alertsFilterBar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.alertsFilterLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
+.alertsFilterSelect,
+.alertsFilterInput {
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.alertsFilterInput {
+  flex: 1;
+  min-width: 120px;
+}
+
+.alertsHint {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.alertsError {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #b91c1c;
+}
+
+.alertsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.alertCard {
+  display: block;
+  text-decoration: none;
+  border-radius: 12px;
+  border: 1.5px solid;
+  padding: 1rem 1.25rem;
+  box-sizing: border-box;
+  transition: opacity 0.15s;
+}
+
+.alertCard:hover {
+  opacity: 0.88;
+}
+
+.alertCard--critical {
+  background: #fff1f2;
+  border-color: #fca5a5;
+}
+
+.alertCard--warning {
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.alertCard--watch {
+  background: #fefce8;
+  border-color: #fde047;
+}
+
+.alertCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.alertCardName {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.alertCardLocation {
+  margin: 0 0 0.2rem;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.alertCardSeverityText {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.alertCardRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.alertBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+}
+
+.alertBadge--critical {
+  background: #ef4444;
+  color: #fff;
+}
+
+.alertBadge--warning {
+  background: #f97316;
+  color: #fff;
+}
+
+.alertBadge--watch {
+  background: #eab308;
+  color: #fff;
+}
+
+.alertCardTime {
+  font-size: 0.78rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.alertsSeverityLegend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--code-bg);
+  font-size: 0.82rem;
+  color: var(--text-h);
+}
+
+.alertsLegendTitle {
+  font-weight: 600;
+}
+
+.alertsLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.alertsLegendDot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.alertsLegendDot--critical { background: #ef4444; }
+.alertsLegendDot--warning  { background: #f97316; }
+.alertsLegendDot--watch    { background: #eab308; }
