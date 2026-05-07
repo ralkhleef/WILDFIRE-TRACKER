@@ -87,6 +87,7 @@ const nearbyFireValidation = [
 
 const alertPreferenceValidation = [
   body('radius')
+    .optional()
     .isInt({ gt: 0, lte: 500 })
     .withMessage('Alert radius must be between 1 and 500 miles.'),
   body('enabled')
@@ -151,6 +152,11 @@ const savedLocationValidation = [
   handleValidationErrors,
 ];
 
+const savedLocationIdValidation = [
+  param('id').trim().notEmpty().withMessage('A saved location id is required.'),
+  handleValidationErrors,
+];
+
 module.exports = {
   signupValidation,
   loginValidation,
@@ -160,4 +166,5 @@ module.exports = {
   localAlertValidation,
   profileValidation,
   savedLocationValidation,
+  savedLocationIdValidation,
 };

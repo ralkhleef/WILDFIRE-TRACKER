@@ -8,11 +8,11 @@
 
 .alertsMain {
   flex: 1;
-  padding: 1.5rem 1.75rem;
+  padding: 18px 22px 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
   overflow-y: auto;
 }
 
@@ -20,25 +20,26 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .alertsTitle {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0;
   color: var(--text-h);
 }
 
 .alertsNotifToggle {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--text-h);
+  color: var(--text);
   cursor: pointer;
   user-select: none;
 }
@@ -53,15 +54,15 @@
 .alertsToggleTrack {
   position: relative;
   display: inline-block;
-  width: 42px;
-  height: 24px;
+  width: 36px;
+  height: 20px;
   background: var(--border);
   border-radius: 999px;
   transition: background 0.2s;
 }
 
 .alertsNotifToggle input:checked + .alertsToggleTrack {
-  background: #22c55e;
+  background: var(--success);
 }
 
 .alertsNotifToggle input:focus-visible + .alertsToggleTrack {
@@ -71,47 +72,50 @@
 
 .alertsToggleThumb {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
   background: #fff;
   border-radius: 50%;
   transition: transform 0.2s;
 }
 
 .alertsNotifToggle input:checked + .alertsToggleTrack .alertsToggleThumb {
-  transform: translateX(18px);
+  transform: translateX(16px);
 }
 
 .alertsNotifLabel {
-  font-size: 0.88rem;
-  color: var(--text);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
+/* Filter bar — flat, single row. */
 .alertsFilterBar {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 8px;
   flex-wrap: wrap;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--bg);
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
 .alertsFilterLabel {
-  font-size: 0.88rem;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-h);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   white-space: nowrap;
 }
 
 .alertsFilterSelect,
 .alertsFilterInput {
   font: inherit;
-  font-size: 0.88rem;
-  padding: 0.4rem 0.65rem;
+  font-size: 13px;
+  height: 34px;
+  padding: 0 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg);
@@ -120,149 +124,194 @@
 
 .alertsFilterInput {
   flex: 1;
-  min-width: 120px;
+  min-width: 140px;
 }
 
 .alertsHint {
   margin: 0;
-  font-size: 0.88rem;
-  color: var(--text);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .alertsError {
   margin: 0;
-  font-size: 0.88rem;
-  color: #b91c1c;
+  font-size: 13px;
+  color: var(--accent-strong);
 }
 
+/* List wraps each row — outer container has a single border, rows use dividers. */
 .alertsList {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
+/* Compact alert row. */
 .alertCard {
-  display: block;
+  display: grid;
+  grid-template-columns: 4px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
   text-decoration: none;
-  border-radius: 12px;
-  border: 1.5px solid;
-  padding: 1rem 1.25rem;
-  box-sizing: border-box;
-  transition: opacity 0.15s;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--divider);
+  background: var(--bg);
+  transition: background 0.12s;
+  position: relative;
 }
 
-.alertCard:hover {
-  opacity: 0.88;
+.alertCard:last-child { border-bottom: none; }
+.alertCard:hover { background: var(--code-bg); }
+
+/* Left severity / source bar (the only colored element on the row). */
+.alertCard::before {
+  content: "";
+  display: block;
+  width: 4px;
+  align-self: stretch;
+  border-radius: 2px;
 }
 
-.alertCard--critical {
-  background: #fff1f2;
-  border-color: #fca5a5;
-}
+.alertCard--critical::before { background: var(--accent); }
+.alertCard--warning::before  { background: var(--orange); }
+.alertCard--watch::before    { background: var(--warning); }
 
-.alertCard--warning {
-  background: #fff7ed;
-  border-color: #fdba74;
-}
-
+/* No more colored card backgrounds. */
+.alertCard--critical,
+.alertCard--warning,
 .alertCard--watch {
-  background: #fefce8;
-  border-color: #fde047;
+  border-color: var(--divider);
+  background: var(--bg);
 }
 
 .alertCardTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
+  display: contents;
+}
+
+.alertCardTop > div:first-child {
+  min-width: 0;
 }
 
 .alertCardName {
-  margin: 0 0 0.2rem;
-  font-size: 1rem;
+  margin: 0 0 1px;
+  font-size: 14px;
+  line-height: 1.25;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-h);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .alertCardLocation {
-  margin: 0 0 0.2rem;
-  font-size: 0.85rem;
-  color: #374151;
+  margin: 0 0 1px;
+  font-size: 12.5px;
+  color: var(--text);
 }
 
 .alertCardSeverityText {
   margin: 0;
-  font-size: 0.82rem;
-  color: #6b7280;
+  font-size: 11.5px;
+  color: var(--text-muted);
 }
 
 .alertCardRight {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.35rem;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.alertBadge {
-  font-size: 0.72rem;
+/* Source badge: small, color-coded by source. */
+.alertSourceBadge {
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 6px;
-  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  background: var(--code-bg);
+  color: var(--text);
+  border: none;
 }
 
-.alertBadge--critical {
-  background: #ef4444;
-  color: #fff;
+/* JSX writes the literal source string into the badge — match by content via attribute. */
+.alertSourceBadge[data-source="cal"] { background: var(--accent-bg); color: var(--accent-strong); }
+.alertSourceBadge[data-source="nasa"] { background: var(--orange-bg); color: #9a3412; }
+.alertSourceBadge[data-source="seed"] { background: var(--code-bg); color: var(--text); }
+
+/* Severity pill — small filled chip. */
+.alertBadge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
-.alertBadge--warning {
-  background: #f97316;
-  color: #fff;
-}
-
-.alertBadge--watch {
-  background: #eab308;
-  color: #fff;
-}
+.alertBadge--critical { background: var(--accent); color: #fff; }
+.alertBadge--warning  { background: var(--orange); color: #fff; }
+.alertBadge--watch    { background: var(--warning); color: #1f2937; }
 
 .alertCardTime {
-  font-size: 0.78rem;
-  color: #6b7280;
+  font-size: 11.5px;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
+/* Severity legend — quiet footer, no card. */
 .alertsSeverityLegend {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 16px;
   flex-wrap: wrap;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--code-bg);
-  font-size: 0.82rem;
-  color: var(--text-h);
+  padding: 8px 0 0;
+  border-top: 1px solid var(--divider);
+  background: transparent;
+  border-radius: 0;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .alertsLegendTitle {
   font-weight: 600;
+  color: var(--text);
 }
 
 .alertsLegendItem {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 6px;
 }
 
 .alertsLegendDot {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
 
-.alertsLegendDot--critical { background: #ef4444; }
-.alertsLegendDot--warning  { background: #f97316; }
-.alertsLegendDot--watch    { background: #eab308; }
+.alertsLegendDot--critical { background: var(--accent); }
+.alertsLegendDot--warning  { background: var(--orange); }
+.alertsLegendDot--watch    { background: var(--warning); }
+
+@media (max-width: 760px) {
+  .alertsMain { padding: 14px; }
+
+  .alertCard {
+    grid-template-columns: 4px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .alertCardRight {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+}

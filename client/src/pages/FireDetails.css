@@ -7,215 +7,298 @@
   box-sizing: border-box;
 }
 
+/* Left context column — quiet, divider-driven. */
 .fireSidebar {
   border-right: 1px solid var(--border);
-  background: var(--code-bg);
-  padding: 1rem 0.75rem;
+  background: var(--bg);
+  padding: 18px 16px;
   box-sizing: border-box;
 }
 
 .fireSidebarTitle {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
+  margin: 0 0 8px;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-h);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .fireSidebarList {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--border);
 }
 
 .fireSidebarList li {
-  font-size: 0.82rem;
+  font-size: 12.5px;
   color: var(--text);
-  padding: 0.45rem 0.15rem;
-  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.fireSidebarList li:last-child { border-bottom: none; }
+
+.fireSidebarList strong {
+  color: var(--text-h);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .fireMainPanel {
-  padding: 1.25rem 1.5rem;
+  padding: 18px 22px 24px;
   box-sizing: border-box;
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 14px;
 }
 
 .fireDetailsHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--divider);
 }
 
 .fireDetailsTitle {
   margin: 0;
-  font-size: 2rem;
-  letter-spacing: -0.02em;
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 700;
   color: var(--text-h);
 }
+
+.fireDetailsSubhead {
+  margin: 4px 0 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.fireBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fireSourceBadge,
+.fireSeverityBadge,
+.fireStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--code-bg);
+  color: var(--text);
+  border: none;
+}
+
+.fireSeverityBadge--critical { background: var(--accent); color: #fff; }
+.fireSeverityBadge--warning  { background: var(--orange); color: #fff; }
+.fireSeverityBadge--watch    { background: var(--warning); color: #1f2937; }
 
 .backToMapBtn {
   text-decoration: none;
   border: 1px solid var(--border);
   color: var(--text-h);
-  padding: 0.45rem 0.75rem;
-  border-radius: 9px;
+  padding: 8px 12px;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 13px;
   background: var(--bg);
 }
 
-.fireStatsGrid {
+.backToMapBtn:hover { background: var(--code-bg); }
+
+/* Info "grid" — cleaner key/value rows, no individual card per stat. */
+.fireInfoGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.9rem;
-}
-
-.fireStatCard {
-  min-height: 120px;
-  border-radius: 16px;
+  gap: 0;
+  background: var(--bg);
   border: 1px solid var(--border);
-  background: #eceff5;
-  padding: 0.9rem;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.fireInfoCard {
+  background: transparent;
+  padding: 12px 14px;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  gap: 0.45rem;
+  border: none;
+  border-right: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
+  min-height: 60px;
 }
 
-.fireStatCard h3 {
-  margin: 0;
-  font-size: 0.9rem;
+.fireInfoCard:nth-child(4n) { border-right: none; }
+.fireInfoCard:nth-last-child(-n+4) { border-bottom: none; }
+
+.fireInfoCard h3 {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 10.5px;
   font-weight: 700;
-  color: var(--text-h);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.fireStatCard p {
+.fireInfoCard p {
   margin: 0;
-  font-size: 0.85rem;
-  color: var(--text);
+  color: var(--text-h);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .fireLowerGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.5fr);
+  gap: 14px;
 }
 
 .fireLargeCard,
-.fireRightStack {
-  border-radius: 16px;
+.fireRightStack,
+.nearbyFiresSection {
+  border-radius: 10px;
   border: 1px solid var(--border);
-  background: #eceff5;
-  padding: 0.9rem;
+  background: var(--bg);
+  padding: 14px;
   box-sizing: border-box;
 }
 
-.fireLargeCard {
-  min-height: 240px;
-}
-
 .fireLargeCard h3,
-.fireRightStack h3 {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
+.fireRightStack h3,
+.nearbyFiresSection h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-h);
 }
 
 .fireMetaLine {
-  margin: 0 0 0.75rem;
-  font-size: 0.83rem;
-  color: var(--text);
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.fireSourceNote {
+  margin: 0;
+  border-left: 3px solid var(--orange);
+  border-radius: 0 8px 8px 0;
+  background: var(--orange-bg);
+  color: #7c2d12;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .externalLinkBtn {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
-  border-radius: 10px;
-  border: 1px solid var(--accent-border);
-  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 7px 11px;
   color: var(--text-h);
-  background: var(--accent-bg);
+  background: var(--bg);
   font-weight: 600;
-  font-size: 0.86rem;
+  font-size: 13px;
+}
+
+.externalLinkBtn:hover { background: var(--code-bg); }
+
+.fireMapPreview {
+  width: 100%;
+  height: clamp(280px, 40vh, 380px);
+  margin: 0 0 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--code-bg);
+}
+
+.fireMapPreview .maplibregl-map,
+.fireMapPreview .fireMapLibreCanvas {
+  width: 100%;
+  height: 100%;
 }
 
 .fireRightStack {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 6px;
 }
 
 .resourcePill {
   display: block;
   text-decoration: none;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  border-radius: 8px;
+  background: transparent;
   color: var(--text-h);
-  padding: 0.55rem 0.75rem;
-  font-size: 0.85rem;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--divider);
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
 }
 
-.nearbyFiresSection {
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  padding: 0.9rem;
-  background: var(--bg);
-}
+.resourcePill:last-child { border-bottom: none; }
 
-.nearbyFiresSection h3 {
-  margin: 0 0 0.65rem;
-  font-size: 0.95rem;
-  color: var(--text-h);
+.resourcePill:hover {
+  background: var(--code-bg);
+  color: var(--accent-strong);
 }
 
 .nearbyFireList {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 0.45rem;
 }
 
 .nearbyFireList li {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 8px;
   justify-content: space-between;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.5rem 0.65rem;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--divider);
 }
+
+.nearbyFireList li:last-child { border-bottom: none; }
 
 .nearbyFireList a {
   color: var(--accent);
   text-decoration: none;
   font-weight: 600;
+  font-size: 13px;
 }
 
 .nearbyFireList span {
-  color: var(--text);
-  font-size: 0.84rem;
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 .fireStatusText {
   margin: 0;
-  color: var(--text);
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .fireErrorText {
   margin: 0;
-  color: #b91c1c;
-  font-size: 0.95rem;
+  color: var(--accent-strong);
+  font-size: 13px;
 }
 
 @media (max-width: 1100px) {
@@ -228,9 +311,12 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .fireStatsGrid {
+  .fireInfoGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .fireInfoCard:nth-child(4n) { border-right: 1px solid var(--divider); }
+  .fireInfoCard:nth-child(2n) { border-right: none; }
 
   .fireLowerGrid {
     grid-template-columns: 1fr;
@@ -238,7 +324,18 @@
 }
 
 @media (max-width: 700px) {
-  .fireStatsGrid {
+  .fireMainPanel {
+    padding: 14px;
+  }
+
+  .fireInfoGrid {
     grid-template-columns: 1fr;
   }
+
+  .fireInfoCard {
+    border-right: none !important;
+    border-bottom: 1px solid var(--divider);
+  }
+
+  .fireInfoCard:last-child { border-bottom: none; }
 }

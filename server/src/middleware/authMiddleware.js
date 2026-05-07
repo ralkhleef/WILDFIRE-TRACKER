@@ -21,6 +21,7 @@ const protect = asyncHandler(async (req, res, next) => {
     select: {
       id: true,
       email: true,
+      username: true,
       name: true,
       googleId: true,
       createdAt: true,

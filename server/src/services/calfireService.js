@@ -9,20 +9,32 @@ const toNumberOrNull = (value) => {
   return Number.isFinite(parsedValue) ? parsedValue : null;
 };
 
-const mapCalfireIncident = (incident) => ({
-  id: `calfire-${incident.UniqueId || incident.Id || incident.Name || crypto.randomUUID()}`,
-  name: incident.Name || 'Unnamed CAL FIRE incident',
-  location: incident.Counties || incident.Location || 'California',
-  latitude: toNumberOrNull(incident.Latitude || incident.latitude),
-  longitude: toNumberOrNull(incident.Longitude || incident.longitude),
-  size: toNumberOrNull(incident.AcresBurned || incident.Size || incident.size),
-  containment: toNumberOrNull(
-    incident.PercentContained || incident.Containment || incident.containment
-  ),
-  source: 'CAL FIRE',
-  status: incident.Active ? 'active' : 'reported',
-  reportedAt: incident.Started || null,
-});
+const toTextOrNull = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean).join(', ') || null;
+  if (typeof value === 'string') return value.trim() || null;
+  return value || null;
+};
+
+const mapCalfireIncident = (incident) => {
+  const location = toTextOrNull(incident.Counties || incident.Location) || 'California';
+  const incidentName = toTextOrNull(incident.Name);
+
+  return {
+    id: `calfire-${incident.UniqueId || incident.Id || incidentName || crypto.randomUUID()}`,
+    name: incidentName || location,
+    location,
+    latitude: toNumberOrNull(incident.Latitude || incident.latitude),
+    longitude: toNumberOrNull(incident.Longitude || incident.longitude),
+    size: toNumberOrNull(incident.AcresBurned || incident.Size || incident.size),
+    containment: toNumberOrNull(
+      incident.PercentContained || incident.Containment || incident.containment
+    ),
+    source: 'CAL FIRE',
+    sourceType: 'confirmed_incident',
+    status: incident.Active ? 'active' : 'reported',
+    reportedAt: incident.Started || null,
+  };
+};
 
 const fetchActiveFires = async () => {
   if (!env.calfireApiUrl) {

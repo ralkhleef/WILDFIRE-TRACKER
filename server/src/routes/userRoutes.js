@@ -5,6 +5,7 @@ const userController = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 const {
   profileValidation,
+  savedLocationIdValidation,
   savedLocationValidation,
 } = require('../middleware/validationMiddleware');
 
@@ -15,5 +16,6 @@ router.get('/profile', userController.getProfile);
 router.put('/profile', profileValidation, userController.updateProfile);
 router.post('/saved-locations', savedLocationValidation, userController.addSavedLocation);
 router.get('/saved-locations', userController.getSavedLocations);
+router.delete('/saved-locations/:id', savedLocationIdValidation, userController.deleteSavedLocation);
 
 module.exports = router;

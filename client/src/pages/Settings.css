@@ -9,11 +9,11 @@
 .settingsMain {
   flex: 1;
   max-width: 100%;
-  padding: 1.5rem clamp(1rem, 3vw, 2rem);
+  padding: 24px 28px 32px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 12px;
   overflow-y: auto;
 }
 
@@ -28,9 +28,10 @@
 
 .settingsTitle {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 750;
+  letter-spacing: 0;
   color: var(--text-h);
 }
 
@@ -103,11 +104,12 @@
 .settingsSection {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.1rem 1.25rem;
+  border-radius: 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 10px;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
 }
 
 .settingsRow {
@@ -119,14 +121,14 @@
 
 .settingsRowTitle {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 760;
   color: var(--text-h);
 }
 
 .settingsRowSub {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 13px;
   color: var(--text);
   line-height: 1.45;
 }
@@ -233,10 +235,11 @@
 
 .settingsInput {
   font: inherit;
-  font-size: 0.88rem;
-  padding: 0.45rem 0.7rem;
+  font-size: 14px;
+  height: 40px;
+  padding: 0 12px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--bg);
   color: var(--text-h);
   min-width: 0;
@@ -245,13 +248,14 @@
 
 .settingsAddBtn {
   font: inherit;
-  font-size: 0.88rem;
-  font-weight: 600;
-  padding: 0.45rem 0.9rem;
-  border: 1px solid var(--accent-border);
-  border-radius: 8px;
-  background: var(--accent-bg);
-  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -277,14 +281,33 @@
 
 .settingsSaveBtn {
   font: inherit;
-  font-weight: 600;
-  padding: 0.7rem 1.4rem;
+  font-weight: 700;
+  height: 42px;
+  padding: 0 18px;
   border: none;
   border-radius: 10px;
   background: var(--accent);
   color: #fff;
   cursor: pointer;
   transition: opacity 0.15s;
+}
+
+@media (min-width: 1020px) {
+  .settingsMain {
+    max-width: 980px;
+  }
+}
+
+@media (max-width: 640px) {
+  .settingsMain {
+    padding: 18px;
+  }
+
+  .settingsRow,
+  .settingsSaveRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 .settingsSaveBtn:hover:not(:disabled) {

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import wildfireLogo from "../assets/wildfire.svg";
 import "./LoginPage.css";
+
+const wildfireLogo = "/wildfire-tracker-logo.svg";
 
 const apiBase =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
-export default function LoginPage() {
+export default function LoginPage({ onAuthChange }) {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -40,6 +41,7 @@ export default function LoginPage() {
       if (token) {
         localStorage.setItem("token", token);
       }
+      onAuthChange?.();
       navigate("/dashboard");
     } catch {
       setError("Network error. Is the backend running?");
@@ -51,14 +53,14 @@ export default function LoginPage() {
   return (
     <main className="loginScreen">
       <div className="loginCard">
-        <h1 className="loginTitle">Wildfire Live Tracker</h1>
         <img
           className="loginLogo"
           src={wildfireLogo}
-          alt=""
-          width={280}
-          height={280}
+          alt="Wildfire Tracker logo"
+          width={260}
+          height={260}
         />
+        <h1 className="loginTitle">Log in</h1>
         <form className="loginForm" onSubmit={handleSubmit}>
           <label className="loginLabel" htmlFor="login-username">
             Username

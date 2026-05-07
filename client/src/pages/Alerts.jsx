@@ -10,9 +10,34 @@ const DEFAULT_LNG = -118.2437;
 const DEFAULT_RADIUS = 100;
 
 function getSeverity(fire) {
+  if (isNasaHotspot(fire)) return "watch";
   if (!fire.containment || fire.containment < 20) return "critical";
   if (fire.containment < 60) return "warning";
   return "watch";
+}
+
+function isNasaHotspot(fire) {
+  return String(fire?.source || "").toLowerCase().includes("nasa");
+}
+
+function getSourceBadgeKey(fire) {
+  const src = String(fire?.source || "").toLowerCase();
+  if (src.includes("cal fire")) return "cal";
+  if (src.includes("nasa")) return "nasa";
+  if (src.includes("seed")) return "seed";
+  return "other";
+}
+
+function getShortSourceLabel(fire) {
+  const src = String(fire?.source || "").toLowerCase();
+  if (src.includes("cal fire")) return "CAL FIRE";
+  if (src.includes("nasa")) return "NASA FIRMS";
+  if (src.includes("seed")) return "SEED";
+  return fire?.source || "SOURCE";
+}
+
+function getFireTitle(fire) {
+  return fire?.name || fire?.location || "Wildfire record";
 }
 
 function getSeverityLabel(severity) {
@@ -180,11 +205,21 @@ export default function AlertsPage() {
                 >
                   <div className="alertCardTop">
                     <div>
-                      <h2 className="alertCardName">{fire.name || "Unnamed fire"}</h2>
+                      <h2 className="alertCardName">{getFireTitle(fire)}</h2>
                       <p className="alertCardLocation">{fire.location || "Unknown location"}</p>
-                      <p className="alertCardSeverityText">Severity: {getSeverityLabel(fire.severity).charAt(0) + getSeverityLabel(fire.severity).slice(1).toLowerCase()}</p>
+                      <p className="alertCardSeverityText">
+                        {isNasaHotspot(fire)
+                          ? fire.subtitle || "Satellite hotspot detection, not confirmed incident"
+                          : `Severity: ${getSeverityLabel(fire.severity).charAt(0) + getSeverityLabel(fire.severity).slice(1).toLowerCase()}`}
+                      </p>
                     </div>
                     <div className="alertCardRight">
+                      <span
+                        className="alertSourceBadge"
+                        data-source={getSourceBadgeKey(fire)}
+                      >
+                        {getShortSourceLabel(fire)}
+                      </span>
                       <span className={`alertBadge alertBadge--${fire.severity}`}>
                         {getSeverityLabel(fire.severity)}
                       </span>

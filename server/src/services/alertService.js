@@ -15,24 +15,35 @@ const listAlertsForUser = async (userId) => {
   ]);
 
   return {
-    alertPreference,
+    alertPreference: alertPreference || {
+      radius: env.defaultAlertRadiusMiles,
+      enabled: true,
+    },
     savedLocations,
   };
 };
 
-const upsertAlertPreference = async (userId, { radius, enabled }) =>
-  prisma.alertPreference.upsert({
+const upsertAlertPreference = async (userId, { radius, enabled }) => {
+  const data = {};
+
+  if (typeof radius !== 'undefined') {
+    data.radius = radius;
+  }
+
+  if (typeof enabled !== 'undefined') {
+    data.enabled = enabled;
+  }
+
+  return prisma.alertPreference.upsert({
     where: { userId },
-    update: {
-      radius,
-      enabled: typeof enabled === 'boolean' ? enabled : true,
-    },
+    update: data,
     create: {
       userId,
       radius,
       enabled: typeof enabled === 'boolean' ? enabled : true,
     },
   });
+};
 
 const getLocalAlerts = async ({ userId, latitude, longitude, radius }) => {
   const [alertPreference, savedLocations] = await Promise.all([

@@ -1,0 +1,165 @@
+.appSidebar {
+  width: 240px;
+  flex: 0 0 240px;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+  padding: 14px 12px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: width 0.18s ease, flex-basis 0.18s ease, padding 0.18s ease;
+  overflow: hidden;
+}
+
+.appSidebar.isCollapsed {
+  width: 0;
+  flex-basis: 0;
+  padding-inline: 0;
+  border-right: none;
+}
+
+/* Compact search with icon prefix. */
+.sidebarSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sidebarSearchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.sidebarSearch input {
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  height: 34px;
+  padding: 0 10px 0 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--code-bg);
+  color: var(--text-h);
+  box-sizing: border-box;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.sidebarSearch input::placeholder {
+  color: var(--text-muted);
+}
+
+.sidebarSearch input:focus {
+  outline: none;
+  background: var(--bg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sidebarNavLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+}
+
+.sidebarNavIcon {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  transition: color 0.12s;
+}
+
+.sidebarNavLink:hover {
+  background: var(--code-bg);
+  color: var(--text-h);
+}
+
+.sidebarNavLink:hover .sidebarNavIcon {
+  color: var(--text-h);
+}
+
+.sidebarNavLink.active {
+  background: var(--accent-bg);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.sidebarNavLink.active .sidebarNavIcon {
+  color: var(--accent);
+}
+
+.sidebarNavLink.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.sidebarDivider {
+  height: 1px;
+  margin: 8px 4px;
+  background: var(--divider);
+}
+
+.sidebarLogoutBtn {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--accent-strong);
+}
+
+.sidebarLogoutBtn .sidebarNavIcon {
+  color: var(--accent-strong);
+}
+
+.sidebarLogoutBtn:hover {
+  background: var(--accent-bg);
+}
+
+@media (max-width: 760px) {
+  .appSidebar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    bottom: 0;
+    z-index: 900;
+    width: min(82vw, 280px);
+    flex-basis: auto;
+    box-shadow: var(--shadow);
+  }
+
+  .appSidebar.isCollapsed {
+    transform: translateX(-100%);
+    width: min(82vw, 280px);
+    padding: 14px 12px;
+    border-right: 1px solid var(--border);
+  }
+}

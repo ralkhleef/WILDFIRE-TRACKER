@@ -1,9 +1,18 @@
 // Inserts a few sample wildfire records for local testing.
 require('dotenv').config();
 
+const bcrypt = require('bcrypt');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
+
+// Demo records are dated relative to "today" so they always land inside the
+// rolling last-7-days window the API uses for the active feed.
+const daysAgo = (n) => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+};
 
 const sampleWildfires = [
   {
@@ -15,7 +24,7 @@ const sampleWildfires = [
     containment: 60,
     source: 'seed',
     status: 'active',
-    reportedAt: new Date('2026-04-08T14:30:00Z'),
+    reportedAt: daysAgo(1),
   },
   {
     name: 'Sierra Ridge Fire',
@@ -26,7 +35,7 @@ const sampleWildfires = [
     containment: 35,
     source: 'seed',
     status: 'active',
-    reportedAt: new Date('2026-04-10T09:15:00Z'),
+    reportedAt: daysAgo(2),
   },
   {
     name: 'Valley Creek Fire',
@@ -37,11 +46,75 @@ const sampleWildfires = [
     containment: 85,
     source: 'seed',
     status: 'contained',
-    reportedAt: new Date('2026-04-06T18:45:00Z'),
+    reportedAt: daysAgo(4),
+  },
+  {
+    name: 'Shasta Ridge Fire',
+    location: 'Shasta County, CA',
+    latitude: 40.7609,
+    longitude: -122.0419,
+    size: 2100,
+    containment: 20,
+    source: 'seed',
+    status: 'active',
+    reportedAt: daysAgo(0),
+  },
+  {
+    name: 'Big Sur Coast Fire',
+    location: 'Monterey County, CA',
+    latitude: 36.2704,
+    longitude: -121.8081,
+    size: 950,
+    containment: 50,
+    source: 'seed',
+    status: 'active',
+    reportedAt: daysAgo(3),
   },
 ];
 
 async function main() {
+  const password = await bcrypt.hash('password123', 10);
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@example.com' },
+    update: {
+      username: 'demo',
+      name: 'Demo User',
+      password,
+    },
+    create: {
+      email: 'demo@example.com',
+      username: 'demo',
+      name: 'Demo User',
+      password,
+    },
+  });
+
+  await prisma.savedLocation.deleteMany({
+    where: { userId: demoUser.id },
+  });
+
+  await prisma.alertPreference.upsert({
+    where: { userId: demoUser.id },
+    update: {
+      radius: 50,
+      enabled: true,
+    },
+    create: {
+      userId: demoUser.id,
+      radius: 50,
+      enabled: true,
+    },
+  });
+
+  await prisma.savedLocation.create({
+    data: {
+      userId: demoUser.id,
+      label: 'Los Angeles demo location',
+      latitude: 34.0522,
+      longitude: -118.2437,
+    },
+  });
+
   await prisma.wildfireRecord.deleteMany({
     where: { source: 'seed' },
   });
@@ -50,7 +123,7 @@ async function main() {
     data: sampleWildfires,
   });
 
-  console.log(`Seeded ${sampleWildfires.length} wildfire records.`);
+  console.log(`Seeded ${sampleWildfires.length} wildfire records and demo@example.com.`);
 }
 
 main()

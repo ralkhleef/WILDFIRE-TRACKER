@@ -75,9 +75,27 @@ const getSavedLocations = async (userId) =>
     orderBy: { createdAt: 'desc' },
   });
 
+const deleteSavedLocation = async (userId, savedLocationId) => {
+  const savedLocation = await prisma.savedLocation.findFirst({
+    where: {
+      id: savedLocationId,
+      userId,
+    },
+  });
+
+  if (!savedLocation) {
+    throw new ApiError(404, 'Saved location not found.');
+  }
+
+  return prisma.savedLocation.delete({
+    where: { id: savedLocationId },
+  });
+};
+
 module.exports = {
   getProfile,
   updateProfile,
   addSavedLocation,
   getSavedLocations,
+  deleteSavedLocation,
 };

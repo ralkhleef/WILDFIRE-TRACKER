@@ -1,7 +1,7 @@
 .wildfireMapCard {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 8px;
   width: 100%;
   min-width: 0;
 }
@@ -10,25 +10,62 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .wildfireMapTitle {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-h);
 }
 
 .wildfireMapControls {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mapStyleSwitcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--code-bg);
+}
+
+.mapStyleSwitcher label {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mapStyleSwitcher label.active {
+  background: var(--bg);
+  color: var(--accent-strong);
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
+  border-radius: 6px;
+}
+
+.mapStyleSwitcher input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .mapControlLabel {
-  font-size: 0.8rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-h);
 }
@@ -36,7 +73,8 @@
 .mapRadiusInput,
 .mapCoordInput {
   font: inherit;
-  padding: 0.35rem 0.5rem;
+  height: 32px;
+  padding: 0 9px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg);
@@ -45,16 +83,17 @@
 }
 
 .mapRadiusInput {
-  width: 76px;
+  width: 68px;
 }
 
 .mapApplyBtn {
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 12px;
   font-weight: 600;
   border: none;
   border-radius: 8px;
-  padding: 0.38rem 0.72rem;
+  min-height: 32px;
+  padding: 0 10px;
   background: var(--accent);
   color: #fff;
   cursor: pointer;
@@ -62,11 +101,12 @@
 
 .mapSecondaryBtn {
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 12px;
   font-weight: 600;
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 0.38rem 0.72rem;
+  min-height: 32px;
+  padding: 0 10px;
   background: var(--code-bg);
   color: var(--text-h);
   cursor: pointer;
@@ -83,14 +123,46 @@
 
 .mapStatusText {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 12px;
   color: var(--text);
 }
 
 .mapErrorText {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 12px;
   color: #b91c1c;
+}
+
+.mapLegend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.mapLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mapLegendDot {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.mapLegendDot--confirmed {
+  background: #ef4444;
+  border: 2px solid #b91c1c;
+}
+
+.mapLegendDot--hotspot {
+  background: #fed7aa;
+  border: 2px dashed #f97316;
 }
 
 .mapDetailsLink {
@@ -113,26 +185,152 @@
 .wildfireMapContainer {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
+  background: var(--code-bg);
 }
 
-.wildfireMapContainer .leaflet-container {
+.wildfireMapContainer .maplibregl-map,
+.wildfireMapContainer .mapLibreCanvas {
   width: 100%;
   height: 100%;
+  min-height: inherit;
+  font-family: var(--sans);
 }
 
 .compactMap {
-  height: 260px;
+  min-height: 390px;
+  height: 46vh;
+  max-height: 520px;
 }
 
 .fullMap {
-  height: min(65vh, 620px);
+  min-height: 660px;
+  height: 72vh;
 }
 
-.wildfireMapContainer .leaflet-container {
-  width: 100%;
-  height: 100%;
+.fireMapMarker {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px 999px 999px 4px;
+  display: grid;
+  place-items: center;
+  transform: rotate(-45deg);
+  border: 2px solid #fff;
+  box-shadow: 0 3px 9px rgba(17, 24, 39, 0.28);
+  cursor: pointer;
+}
+
+.fireMapMarkerInner {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  transform: rotate(45deg);
+  display: block;
+  background: #fff;
+}
+
+.fireMapMarker--confirmed,
+.fireMapMarker--demo {
+  background: #dc2626;
+}
+
+.fireMapMarker--demo {
+  background: #f97316;
+}
+
+.fireMapMarker--hotspot {
+  background: #f59e0b;
+}
+
+.fireMapMarker--hotspot .fireMapMarkerInner {
+  width: 8px;
+  height: 8px;
+  background: #7c2d12;
+}
+
+.fireMapMarker--selected {
+  width: 24px;
+  height: 24px;
+  background: #2563eb;
+}
+
+.fireMapMarker--selected .fireMapMarkerInner {
+  width: 8px;
+  height: 8px;
+}
+
+.maplibregl-popup-content {
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.22);
+}
+
+.maplibregl-popup-close-button {
+  color: var(--text);
+  font-size: 18px;
+  padding: 4px 7px;
+}
+
+.mapPopupCard {
+  min-width: 190px;
+  max-width: 245px;
+  padding: 10px;
+  color: var(--text-h);
+  font-family: var(--sans);
+}
+
+.mapPopupCard strong {
+  display: block;
+  margin: 0 18px 3px 0;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.mapPopupCard p {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.mapPopupMeta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 7px 0;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.mapPopupBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #f7f7f4;
+  color: var(--text-h);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.mapPopupNote {
+  margin: 0 0 10px !important;
+}
+
+.mapPopupLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .mapResultsSection {
@@ -152,18 +350,22 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 0.4rem;
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
 }
 
 .mapResultsItem {
   display: flex;
-  justify-content: space-between;
-  gap: 0.6rem;
+  flex-direction: column;
+  gap: 0.15rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.45rem 0.6rem;
   font-size: 0.82rem;
+  min-width: 170px;
+  background: var(--code-bg);
 }
 
 .mapResultsItem span {
@@ -178,5 +380,21 @@
 
   .wildfireMapControls {
     width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .mapStyleSwitcher {
+    width: 100%;
+  }
+
+  .mapStyleSwitcher label {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .compactMap,
+  .fullMap {
+    min-height: 420px;
+    height: 58vh;
   }
 }
