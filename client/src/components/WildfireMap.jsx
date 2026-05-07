@@ -10,7 +10,7 @@ import {
 import "./WildfireMap.css";
 
 const apiBase =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 const DEFAULT_CENTER = { latitude: 34.0522, longitude: -118.2437 };
 const DEFAULT_RADIUS_MILES = 50;

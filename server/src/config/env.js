@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 module.exports = {
-  port: Number(process.env.PORT) || 5001,
+  port: Number(process.env.PORT) || 5050,
   nodeEnv: process.env.NODE_ENV || 'development',
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET || 'development_only_secret',
@@ -12,7 +12,7 @@ module.exports = {
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
   googleCallbackUrl:
-    process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5001/api/auth/google/callback',
+    process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5050/api/auth/google/callback',
   calfireApiUrl: process.env.CALFIRE_API_URL || '',
   nasaFirmsApiUrl: process.env.NASA_FIRMS_API_URL || '',
   nasaFirmsMapKey: process.env.NASA_FIRMS_MAP_KEY || '',

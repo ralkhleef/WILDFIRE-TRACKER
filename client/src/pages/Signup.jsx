@@ -4,7 +4,7 @@ import wildfireLogo from "../assets/wildfire.svg";
 import "./LoginPage.css";
 
 const apiBase =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 export default function Signup() {
   const navigate = useNavigate();

@@ -7,7 +7,7 @@ const DEFAULT_CENTER = { lat: 34.0522, lng: -118.2437 };
 const FIRE_RADIUS_MI = 60;
 
 const apiBase =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 function milesBetween(aLat, aLng, bLat, bLng) {
   const R = 3959;

@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import "./FireDetails.css";
 
 const apiBase =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 function formatNumber(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "N/A";

@@ -9,7 +9,7 @@ npm run dev
 
 Leave this running. You should see:
 ```
-WildFire-Tracker backend listening on port 5001
+WildFire-Tracker backend listening on port 5050
 ```
 
 ---
@@ -49,7 +49,7 @@ npm run dev
 ## Notes
 
 - Both terminals must stay open while developing
-- Backend runs on port `5001`
+- Backend runs on port `5050`
 - Frontend runs on port `5173` (or `5174`, `5175` if taken)
 - If you close a terminal, restart it with the same commands above
 

@@ -72,7 +72,7 @@ WildFire-Tracker/
 
 Use the backend health check once the server is running:
 
-`GET http://localhost:5001/api/health`
+`GET http://localhost:5050/api/health`
 
 Expected result:
 
@@ -90,7 +90,11 @@ Expected result:
 - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret placeholder
 - `GOOGLE_CALLBACK_URL`: Google OAuth callback route
 - `CALFIRE_API_URL`: primary wildfire data source
-- `NASA_API_URL`: secondary wildfire data source
+- `NASA_FIRMS_API_URL`: NASA FIRMS API base URL
+- `NASA_FIRMS_MAP_KEY`: NASA FIRMS map key
+- `NASA_FIRMS_SOURCE`: NASA FIRMS source, such as `VIIRS_SNPP_NRT`
+- `NASA_FIRMS_AREA`: NASA FIRMS bounding box
+- `NASA_FIRMS_DAY_RANGE`: NASA FIRMS day range
 - `DEFAULT_ALERT_RADIUS_MILES`: default search radius for nearby alerts
 
 ## API Route Summary

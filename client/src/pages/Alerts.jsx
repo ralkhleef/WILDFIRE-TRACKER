@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "./Alerts.css";
 
 const apiBase =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 const DEFAULT_LAT = 34.0522;
 const DEFAULT_LNG = -118.2437;

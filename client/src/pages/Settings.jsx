@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "./Settings.css";
 
 const apiBase =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 function getToken() {
   return localStorage.getItem("token");

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "./Dashboard.css";
 import WildfireMap from "../components/WildfireMap.jsx";
 
-const apiBase = import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5001";
+const apiBase = import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 function RecentFires() {
   const [fires, setFires] = useState([]);
