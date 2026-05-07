@@ -43,7 +43,9 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
   const [center, setCenter] = useState(initialCenter || DEFAULT_CENTER);
   const [radius, setRadius] = useState(DEFAULT_RADIUS_MILES);
   const [fires, setFires] = useState([]);
-  const [status, setStatus] = useState("Requesting your location...");
+  const [status, setStatus] = useState(
+    initialCenter ? "Using provided location." : "Requesting your location...",
+  );
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showManualLocation, setShowManualLocation] = useState(false);
@@ -100,7 +102,8 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
 
   useEffect(() => {
     if (initialCenter) {
-      setStatus("Using provided location.");
+      // This initial API load is the component's external synchronization point.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchNearbyFires(initialCenter.latitude, initialCenter.longitude, radius);
       return;
     }
@@ -133,6 +136,8 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
   }, []);
   useEffect(() => {
     if (!initialCenter) return;
+    // Updating from parent-provided coordinates keeps embedded maps in sync.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCenter(initialCenter);
     fetchNearbyFires(initialCenter.latitude, initialCenter.longitude, radius);
   // eslint-disable-next-line react-hooks/exhaustive-deps

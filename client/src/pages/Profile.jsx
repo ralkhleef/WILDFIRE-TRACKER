@@ -53,11 +53,12 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
-    setError("");
-    setSuccess("");
     const headers = getAuthHeaders();
 
     if (!headers) {
+      // Auth status is read from localStorage at mount so this page can show
+      // a sign-in prompt without making a protected API request.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false);
       setUserId(null);
       return;

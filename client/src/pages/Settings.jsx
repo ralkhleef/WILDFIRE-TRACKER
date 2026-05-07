@@ -39,7 +39,9 @@ export default function Settings() {
         });
         const body = await res.json().catch(() => ({}));
         if (res.ok) setSavedLocations(Array.isArray(body?.data) ? body.data : []);
-      } catch {}
+      } catch {
+        // Saved locations are optional; the settings page can still work locally.
+      }
     }
     loadLocations();
   }, [isLoggedIn]);

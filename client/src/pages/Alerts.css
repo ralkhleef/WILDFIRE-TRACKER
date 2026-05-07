@@ -44,7 +44,10 @@
 }
 
 .alertsNotifToggle input {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
 }
 
 .alertsToggleTrack {
@@ -59,6 +62,11 @@
 
 .alertsNotifToggle input:checked + .alertsToggleTrack {
   background: #22c55e;
+}
+
+.alertsNotifToggle input:focus-visible + .alertsToggleTrack {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .alertsToggleThumb {

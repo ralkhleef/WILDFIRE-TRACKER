@@ -50,7 +50,7 @@ export default function EvacuationResources() {
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [notificationsOn, setNotificationsOn] = useState(true);
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Using default map center. Search for your area below.");
   const [geocodeBusy, setGeocodeBusy] = useState(false);
   const [nearbyFires, setNearbyFires] = useState([]);
   const [firesLoading, setFiresLoading] = useState(false);
@@ -60,7 +60,6 @@ export default function EvacuationResources() {
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setStatus("Using default map center. Search for your area below.");
       return;
     }
     navigator.geolocation.getCurrentPosition(

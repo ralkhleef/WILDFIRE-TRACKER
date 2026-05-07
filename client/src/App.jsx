@@ -34,6 +34,7 @@ export default function App() {
           <Route path="/resources" element={<EvacuationResources />} />
           <Route path="/offline" element={<Offline />} />
           <Route path="/fire/:id" element={<FireDetails />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
         <Footer />
       </div>

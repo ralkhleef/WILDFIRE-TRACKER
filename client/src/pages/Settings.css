@@ -49,7 +49,10 @@
 
 .settingsNotifToggle input,
 .settingsToggle input {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
 }
 
 .settingsToggleTrack {
@@ -66,6 +69,12 @@
 .settingsNotifToggle input:checked + .settingsToggleTrack,
 .settingsToggle input:checked + .settingsToggleTrack {
   background: #22c55e;
+}
+
+.settingsNotifToggle input:focus-visible + .settingsToggleTrack,
+.settingsToggle input:focus-visible + .settingsToggleTrack {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .settingsToggleThumb {

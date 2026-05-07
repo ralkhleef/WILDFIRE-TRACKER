@@ -6,7 +6,14 @@ const CACHE_KEY = "wf_cached_fires";
 
 export default function Offline() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [cachedFires, setCachedFires] = useState([]);
+  const [cachedFires] = useState(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     function handleOnline() { setIsOnline(true); }
@@ -17,13 +24,6 @@ export default function Offline() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []);
-
-  useEffect(() => {
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) setCachedFires(JSON.parse(cached));
-    } catch {}
   }, []);
 
   return (
