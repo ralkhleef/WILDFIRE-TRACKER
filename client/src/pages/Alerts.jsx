@@ -132,6 +132,7 @@ export default function AlertsPage() {
         <div className="alertsFilterBar">
           <span className="alertsFilterLabel">Filter &amp; sort</span>
           <select
+            aria-label="Sort by"
             className="alertsFilterSelect"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -141,6 +142,7 @@ export default function AlertsPage() {
             <option value="distance">Distance (sort)</option>
           </select>
           <select
+            aria-label="Filter by severity"
             className="alertsFilterSelect"
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
@@ -151,6 +153,7 @@ export default function AlertsPage() {
             <option value="watch">Watch</option>
           </select>
           <input
+            aria-label="Filter by location"
             className="alertsFilterInput"
             type="text"
             placeholder="Location"

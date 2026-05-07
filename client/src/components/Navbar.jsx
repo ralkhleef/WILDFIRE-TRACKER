@@ -71,7 +71,6 @@ export default function Navbar() {
     { to: "/settings", label: "Settings" },
     { to: "/help", label: "Help Resources" },
     { to: "/offline", label: "Offline" },
-    { to: "/saved-locations", label: "Saved Locations" },
     { to: "/", label: "Login" },
     { to: "/signup", label: "Signup" },
     
