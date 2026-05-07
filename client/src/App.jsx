@@ -13,14 +13,7 @@ import Offline from "./pages/Offline.jsx";
 import FireDetails from "./pages/FireDetails.jsx";
 import "./App.css";
 import Alerts from "./pages/Alerts.jsx";
-
-function Placeholder({ title }) {
-  return (
-    <main style={{ padding: "1.5rem" }}>
-      <h1>{title}</h1>
-    </main>
-  );
-}
+import Footer from "./components/Footer";
 
 export default function App() {
   return (
@@ -41,11 +34,8 @@ export default function App() {
           <Route path="/resources" element={<EvacuationResources />} />
           <Route path="/offline" element={<Offline />} />
           <Route path="/fire/:id" element={<FireDetails />} />
-          <Route
-            path="/saved-locations"
-            element={<Placeholder title="Saved Locations" />}
-          />
         </Routes>
+        <Footer />
       </div>
     </BrowserRouter>
   );

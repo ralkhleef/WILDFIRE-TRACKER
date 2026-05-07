@@ -191,3 +191,33 @@
     border-right-color: var(--border);
   }
 }
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .dashboardShell {
+    flex-direction: column;
+  }
+
+  .dashboardSidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .dashboardSidebar .sidebarSection {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .dashboardMain {
+    padding: 1rem;
+  }
+
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+}
