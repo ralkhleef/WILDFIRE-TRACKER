@@ -22,8 +22,8 @@ export default function Navbar({ sidebarOpen = false, onMenuToggle }) {
           <img
             src={wildfireLogo}
             alt=""
-            width={48}
-            height={48}
+            width={64}
+            height={64}
             className="logoImg"
           />
         </Link>

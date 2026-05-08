@@ -1,13 +1,14 @@
 // Handles wildfire record lookups from the database and external API integrations.
-// All public list/nearby responses are filtered to California + last 7 days so
-// every page sees the same clean, current data set.
+// Public list/nearby responses are source-aware: CAL FIRE active/current
+// incidents are confirmed records, while NASA FIRMS records are recent
+// satellite hotspot clusters only.
 const env = require('../config/env');
 const prisma = require('../config/prisma');
 const ApiError = require('../utils/ApiError');
 const { filterNearbyFires } = require('../utils/geolocation');
 const {
-  filterCaliforniaRecent,
   isInCalifornia,
+  isWithinLastDays,
 } = require('../utils/californiaFilter');
 const calfireService = require('./calfireService');
 const nasaService = require('./nasaService');
@@ -17,6 +18,74 @@ const getSourcePriority = (fire) => {
   if (source.includes('cal fire')) return 0;
   if (source.includes('nasa')) return 2;
   return 1;
+};
+
+const isCalFireSource = (fire) => String(fire?.source || '').toLowerCase().includes('cal fire');
+const isNasaSource = (fire) => String(fire?.source || '').toLowerCase().includes('nasa');
+
+const normalizeKey = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+
+const getDedupeKey = (fire) => {
+  if (isCalFireSource(fire)) {
+    const nameLocationKey = [normalizeKey(fire.name), normalizeKey(fire.location)]
+      .filter(Boolean)
+      .join('|');
+    return nameLocationKey || normalizeKey(fire.id);
+  }
+
+  if (isNasaSource(fire)) {
+    return normalizeKey(fire.id) || [normalizeKey(fire.name), normalizeKey(fire.location)].join('|');
+  }
+
+  return normalizeKey(fire.id) || [normalizeKey(fire.name), normalizeKey(fire.location)].join('|');
+};
+
+const isSameCalFireIncident = (first, second) => {
+  if (!isCalFireSource(first) || !isCalFireSource(second)) return false;
+  const firstId = normalizeKey(first.id);
+  const secondId = normalizeKey(second.id);
+  if (firstId && secondId && firstId === secondId) return true;
+
+  const firstName = normalizeKey(first.name);
+  const secondName = normalizeKey(second.name);
+  const firstLocation = normalizeKey(first.location);
+  const secondLocation = normalizeKey(second.location);
+  return Boolean(firstName && secondName && firstLocation && secondLocation) &&
+    firstName === secondName &&
+    firstLocation === secondLocation;
+};
+
+const findExistingDedupeKey = (fireMap, fire, fallbackKey) => {
+  if (!isCalFireSource(fire)) return fallbackKey;
+  for (const [key, existing] of fireMap.entries()) {
+    if (isSameCalFireIncident(existing, fire)) return key;
+  }
+  return fallbackKey;
+};
+
+const isInactiveStatus = (status) => {
+  const normalized = String(status || '').toLowerCase();
+  return ['inactive', 'archived', 'archive', 'closed', 'final', 'contained'].some((word) =>
+    normalized.includes(word),
+  );
+};
+
+const shouldShowInActiveFeed = (fire) => {
+  if (!isInCalifornia(Number(fire?.latitude), Number(fire?.longitude))) return false;
+
+  if (isCalFireSource(fire)) {
+    return !isInactiveStatus(fire.status);
+  }
+
+  if (isNasaSource(fire)) {
+    return isWithinLastDays(fire.reportedAt, 5);
+  }
+
+  return isWithinLastDays(fire.reportedAt, 7);
 };
 
 const getReportedTime = (fire) => {
@@ -36,7 +105,11 @@ const mergeFireSources = (...collections) => {
 
   collections.flat().forEach((fire) => {
     if (!fire || !fire.id) return;
-    fireMap.set(fire.id, fire);
+    const key = findExistingDedupeKey(fireMap, fire, getDedupeKey(fire));
+    const current = fireMap.get(key);
+    if (!current || getReportedTime(fire) >= getReportedTime(current)) {
+      fireMap.set(key, fire);
+    }
   });
 
   return Array.from(fireMap.values());
@@ -61,8 +134,7 @@ const listFires = async ({ includeExternal = false } = {}) => {
     combined = mergeFireSources(storedFires, calfireFires, nasaFires);
   }
 
-  // California + within last 7 days, then confirmed/source-aware ordering.
-  return sortBySourcePriority(filterCaliforniaRecent(combined));
+  return sortBySourcePriority(mergeFireSources(combined).filter(shouldShowInActiveFeed));
 };
 
 const getFireById = async (fireId) => {

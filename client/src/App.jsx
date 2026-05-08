@@ -26,6 +26,7 @@ function AppLayout() {
     location.pathname === "/login" ||
     location.pathname === "/signup" ||
     location.pathname === "/register";
+  const isMapPage = location.pathname === "/map";
   const handleSidebarNavigate = () => {
     if (window.innerWidth <= 760) {
       setSidebarOpen(false);
@@ -41,7 +42,7 @@ function AppLayout() {
   };
 
   return (
-    <div className={`appShell ${isAuthPage ? "authShell" : ""}`}>
+    <div className={`appShell ${isAuthPage ? "authShell" : ""} ${isMapPage ? "mapShell" : ""}`}>
       <Navbar
         sidebarOpen={sidebarOpen}
         onMenuToggle={() => setSidebarOpen((open) => !open)}
@@ -76,7 +77,7 @@ function AppLayout() {
           </Routes>
         </div>
       </div>
-      <Footer />
+      {!isMapPage ? <Footer /> : null}
     </div>
   );
 }

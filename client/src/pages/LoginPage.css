@@ -11,28 +11,28 @@
 
 .loginCard {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 14px;
-  padding: 32px 28px;
+  gap: 10px;
+  padding: 24px 32px 32px;
   box-sizing: border-box;
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
 }
 
 .loginLogo {
-  width: min(260px, 70vw);
+  width: min(300px, 78vw);
   height: auto;
   aspect-ratio: 1 / 1;
   display: block;
-  margin: 0 auto 4px;
+  margin: -12px auto -8px;   /* shave the SVG's transparent padding so the card stays tight */
   object-fit: contain;
   object-position: center;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .loginTitle {
@@ -40,8 +40,9 @@
   color: var(--text-h);
   font-family: var(--heading);
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .loginForm {
@@ -67,7 +68,7 @@
   height: 42px;
   padding: 0 12px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--bg);
   color: var(--text-h);
   box-sizing: border-box;
@@ -84,26 +85,34 @@
   margin-top: 4px;
   font: inherit;
   font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 13px;
   cursor: pointer;
   height: 44px;
   border: none;
-  border-radius: 8px;
-  background: var(--accent);
+  border-radius: 6px;
+  background: var(--gradient-fire);
   color: #fff;
-  transition: background 0.15s, transform 0.1s;
+  box-shadow: var(--shadow-fire);
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
 }
 
 .loginButton:hover:not(:disabled) {
-  background: var(--accent-strong);
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 18px -4px rgba(220, 38, 38, 0.55);
 }
 
 .loginButton:active:not(:disabled) {
-  transform: scale(0.99);
+  transform: translateY(0);
 }
 
 .loginButton:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .loginError {
@@ -111,10 +120,10 @@
   font-size: 13px;
   color: var(--accent-strong);
   text-align: center;
-  padding: 8px 10px;
-  border: 1px solid var(--accent-border);
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
   background: var(--accent-bg);
-  border-radius: 8px;
+  border-radius: 0 6px 6px 0;
 }
 
 .loginFooter {
@@ -132,14 +141,15 @@
 
 .loginFooter a:hover {
   text-decoration: underline;
+  color: var(--accent-strong);
 }
 
 @media (max-width: 640px) {
   .loginCard {
-    padding: 24px 20px;
+    padding: 28px 22px;
   }
 
   .loginLogo {
-    width: min(200px, 72vw);
+    width: min(240px, 80vw);
   }
 }

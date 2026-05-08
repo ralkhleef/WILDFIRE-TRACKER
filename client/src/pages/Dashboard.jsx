@@ -32,13 +32,6 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)} days ago`;
 }
 
-function getSeverityLabel(fire) {
-  if (isNasaHotspot(fire)) return "Watch";
-  if (!fire?.containment || fire.containment < 20) return "Critical";
-  if (fire.containment < 60) return "Warning";
-  return "Watch";
-}
-
 function DashboardStat({ value, label, tone = "default" }) {
   return (
     <article className={`dashboardStat dashboardStat--${tone}`}>
@@ -87,7 +80,6 @@ export default function Dashboard() {
       confirmed: incidentFires.length,
       hotspots: fires.filter(isNasaHotspot).length,
       avgContainment,
-      critical: incidentFires.filter((fire) => !fire.containment || fire.containment < 20).length,
     };
   }, [fires]);
 
@@ -100,13 +92,12 @@ export default function Dashboard() {
           <p className="pageEyebrow">California active feed</p>
           <h1 className="dashboardPageTitle">Dashboard</h1>
         </div>
-        <span className="dashboardFreshness">Last 7 days · CAL FIRE + NASA FIRMS</span>
       </header>
 
       <section className="dashboardStatsGrid" aria-label="Fire summary">
         <DashboardStat value={loading ? "..." : stats.total} label="Tracked records" />
-        <DashboardStat value={loading ? "..." : stats.confirmed} label="Confirmed/demo incidents" tone="danger" />
-        <DashboardStat value={loading ? "..." : stats.hotspots} label="Satellite hotspot clusters" tone="orange" />
+        <DashboardStat value={loading ? "..." : stats.confirmed} label="Confirmed incidents" tone="danger" />
+        <DashboardStat value={loading ? "..." : stats.hotspots} label="Hotspot clusters" tone="orange" />
         <DashboardStat
           value={loading ? "..." : stats.avgContainment === null ? "N/A" : `${stats.avgContainment}%`}
           label="Avg containment"
@@ -116,10 +107,7 @@ export default function Dashboard() {
       <section className="dashboardGrid">
         <article className="dashboardPanel dashboardMapPanel">
           <div className="panelHeader">
-            <div>
-              <h2>Live California map</h2>
-              <p>Confirmed incidents and satellite hotspot clusters</p>
-            </div>
+            <h2>Live California map</h2>
             <Link className="panelLink" to="/map">Open full map</Link>
           </div>
           <WildfireMap compact title="" />
@@ -128,10 +116,7 @@ export default function Dashboard() {
         <aside className="dashboardSideStack">
           <article className="dashboardPanel">
             <div className="panelHeader">
-              <div>
-                <h2>Recent fires</h2>
-                <p>Tap any row for details</p>
-              </div>
+              <h2>Recent fires</h2>
             </div>
             {loading ? (
               <p className="emptyState">Loading active feed...</p>
@@ -158,27 +143,6 @@ export default function Dashboard() {
             ) : (
               <p className="emptyState">No current California records found.</p>
             )}
-          </article>
-
-          <article className="dashboardPanel">
-            <div className="panelHeader">
-              <div>
-                <h2>Operational view</h2>
-                <p>Compact severity scan</p>
-              </div>
-            </div>
-            <div className="severitySummary">
-              <div>
-                <strong>{loading ? "..." : stats.critical}</strong>
-                <span>Critical or low containment</span>
-              </div>
-              {recent.slice(0, 4).map((fire) => (
-                <div key={`severity-${fire.id}`} className="severityRow">
-                  <span>{getFireTitle(fire)}</span>
-                  <b>{getSeverityLabel(fire)}</b>
-                </div>
-              ))}
-            </div>
           </article>
         </aside>
       </section>

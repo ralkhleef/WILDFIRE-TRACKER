@@ -8,11 +8,11 @@
 
 .alertsMain {
   flex: 1;
-  padding: 18px 22px 24px;
+  padding: 22px 24px 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   overflow-y: auto;
 }
 
@@ -26,10 +26,10 @@
 
 .alertsTitle {
   margin: 0;
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text-h);
 }
 
@@ -90,7 +90,7 @@
   color: var(--text-muted);
 }
 
-/* Filter bar — flat, single row. */
+/* Filter bar — flat, single row, no card. */
 .alertsFilterBar {
   display: flex;
   align-items: center;
@@ -102,11 +102,11 @@
 }
 
 .alertsFilterLabel {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   white-space: nowrap;
 }
 
@@ -114,12 +114,20 @@
 .alertsFilterInput {
   font: inherit;
   font-size: 13px;
-  height: 34px;
+  height: 36px;
   padding: 0 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--bg);
   color: var(--text-h);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.alertsFilterSelect:focus,
+.alertsFilterInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 .alertsFilterInput {
@@ -139,24 +147,23 @@
   color: var(--accent-strong);
 }
 
-/* List wraps each row — outer container has a single border, rows use dividers. */
+/* One material panel; rows inside use dividers. */
 .alertsList {
   display: flex;
   flex-direction: column;
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
-/* Compact alert row. */
 .alertCard {
   display: grid;
   grid-template-columns: 4px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
   text-decoration: none;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--divider);
   background: var(--bg);
   transition: background 0.12s;
@@ -166,7 +173,7 @@
 .alertCard:last-child { border-bottom: none; }
 .alertCard:hover { background: var(--code-bg); }
 
-/* Left severity / source bar (the only colored element on the row). */
+/* Left severity bar — only colored element on the row. */
 .alertCard::before {
   content: "";
   display: block;
@@ -227,32 +234,30 @@
   justify-content: flex-end;
 }
 
-/* Source badge: small, color-coded by source. */
+/* Source chips — material pill shape, color-coded. */
 .alertSourceBadge {
   font-size: 10.5px;
   font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
   white-space: nowrap;
   background: var(--code-bg);
   color: var(--text);
   border: none;
 }
 
-/* JSX writes the literal source string into the badge — match by content via attribute. */
-.alertSourceBadge[data-source="cal"] { background: var(--accent-bg); color: var(--accent-strong); }
-.alertSourceBadge[data-source="nasa"] { background: var(--orange-bg); color: #9a3412; }
+.alertSourceBadge[data-source="cal"]  { background: var(--accent); color: #fff; }
+.alertSourceBadge[data-source="nasa"] { background: var(--orange); color: #fff; }
 .alertSourceBadge[data-source="seed"] { background: var(--code-bg); color: var(--text); }
 
-/* Severity pill — small filled chip. */
 .alertBadge {
   font-size: 10.5px;
   font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
-  letter-spacing: 0.03em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -266,7 +271,6 @@
   white-space: nowrap;
 }
 
-/* Severity legend — quiet footer, no card. */
 .alertsSeverityLegend {
   display: flex;
   align-items: center;
@@ -303,7 +307,7 @@
 .alertsLegendDot--watch    { background: var(--warning); }
 
 @media (max-width: 760px) {
-  .alertsMain { padding: 14px; }
+  .alertsMain { padding: 16px; }
 
   .alertCard {
     grid-template-columns: 4px minmax(0, 1fr);

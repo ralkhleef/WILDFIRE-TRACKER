@@ -24,6 +24,23 @@
   background: var(--page);
 }
 
+.mapShell {
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
+}
+
+.mapShell .appBody {
+  height: calc(100svh - 68px);
+  flex: 0 0 calc(100svh - 68px);
+  overflow: hidden;
+}
+
+.mapShell .appRouteContent {
+  height: 100%;
+  overflow: hidden;
+}
+
 .authShell .appBody {
   justify-content: center;
 }
@@ -35,5 +52,10 @@
 @media (max-width: 760px) {
   .appBody {
     position: relative;
+  }
+
+  .mapShell .appBody {
+    height: calc(100svh - 62px);
+    flex-basis: calc(100svh - 62px);
   }
 }

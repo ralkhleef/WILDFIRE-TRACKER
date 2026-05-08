@@ -1,7 +1,9 @@
 // Service for fetching and normalizing active fire data from NASA FIRMS.
 const env = require('../config/env');
 const {
+  CA_BOUNDS,
   isInCalifornia,
+  isWithinLastDays,
   nearestCaliforniaCounty,
   parseFireDate,
 } = require('../utils/californiaFilter');
@@ -9,15 +11,22 @@ const {
 const formatCoord = (n) =>
   Number.isFinite(n) ? n.toFixed(2) : '';
 
+const FIRMS_DEFAULT_AREA = `${CA_BOUNDS.minLng},${CA_BOUNDS.minLat},${CA_BOUNDS.maxLng},${CA_BOUNDS.maxLat}`;
+const FIRMS_DEFAULT_SOURCE = 'VIIRS_SNPP_NRT';
+const FIRMS_DEFAULT_DAY_RANGE = 3;
+const roundToQuarter = (value) => Math.round(value * 4) / 4;
+
 const buildLabel = (latitude, longitude) => {
   const county = nearestCaliforniaCounty(latitude, longitude);
   if (county) {
     return {
       location: `${county}, CA`,
+      clusterKey: `county:${county}`,
     };
   }
   return {
-    location: `${formatCoord(latitude)}, ${formatCoord(longitude)}, CA`,
+    location: `Hotspot at ${formatCoord(latitude)}, ${formatCoord(longitude)}`,
+    clusterKey: `coord:${roundToQuarter(latitude)},${roundToQuarter(longitude)}`,
   };
 };
 
@@ -53,6 +62,11 @@ const confidenceRank = (value) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const hasAcceptableConfidence = (value) => {
+  if (!value) return true;
+  return confidenceRank(value) >= 2;
+};
+
 const newestByReportedAt = (a, b) => {
   const aTime = parseFireDate(a.reportedAt)?.getTime() || 0;
   const bTime = parseFireDate(b.reportedAt)?.getTime() || 0;
@@ -63,7 +77,9 @@ const groupFirmsDetections = (detections) => {
   const grouped = new Map();
 
   detections.forEach((detection) => {
-    const key = detection.location || 'California';
+    const key =
+      detection.clusterKey ||
+      `coord:${roundToQuarter(detection.latitude)},${roundToQuarter(detection.longitude)}`;
     const current = grouped.get(key);
     if (!current) {
       grouped.set(key, {
@@ -100,14 +116,15 @@ const groupFirmsDetections = (detections) => {
 
       return {
         ...latest,
-        id: `firms-${slugify(group.location)}`,
+        id: `firms-${slugify(group.clusterKey || group.location)}`,
         name: group.location,
         location: group.location,
         latitude: Number(avgLatitude.toFixed(5)),
         longitude: Number(avgLongitude.toFixed(5)),
         source: 'NASA FIRMS',
         sourceType: 'satellite_hotspot',
-        status: 'hotspot',
+        status: 'hotspot_detected',
+        confirmed: false,
         subtitle,
         details: subtitle,
         hotspotCount: count,
@@ -154,20 +171,31 @@ const parseFirmsCsv = (csvText) => {
           : fire.acq_date || null;
 
       const parsedDate = parseFireDate(rawDate);
+      if (!parsedDate || !isWithinLastDays(parsedDate, 5)) {
+        return null;
+      }
 
-      const { location } = buildLabel(latitude, longitude);
+      if (!hasAcceptableConfidence(fire.confidence)) {
+        return null;
+      }
+
+      const { location, clusterKey } = buildLabel(latitude, longitude);
 
       return {
         id: `firms-${index}-${latitude}-${longitude}`,
         name: location,
         location,
+        clusterKey,
         latitude,
         longitude,
         size: null,
         containment: null,
         source: 'NASA FIRMS',
         sourceType: 'satellite_hotspot',
-        status: 'hotspot',
+        status: 'hotspot_detected',
+        confirmed: false,
+        subtitle: 'NASA FIRMS satellite hotspot',
+        details: 'NASA FIRMS satellite hotspot',
         brightness: fire.bright_ti4 || fire.brightness || null,
         confidence: fire.confidence || null,
         satellite: fire.satellite || null,
@@ -180,21 +208,20 @@ const parseFirmsCsv = (csvText) => {
 };
 
 const fetchActiveFires = async () => {
-  if (
-    !env.nasaFirmsApiUrl ||
-    !env.nasaFirmsMapKey ||
-    !env.nasaFirmsSource ||
-    !env.nasaFirmsArea ||
-    !env.nasaFirmsDayRange
-  ) {
+  if (!env.nasaFirmsApiUrl || !env.nasaFirmsMapKey) {
     return [];
   }
 
+  const source = env.nasaFirmsSource || FIRMS_DEFAULT_SOURCE;
+  const area = env.nasaFirmsArea || FIRMS_DEFAULT_AREA;
+  const rawDayRange = Number(env.nasaFirmsDayRange) || FIRMS_DEFAULT_DAY_RANGE;
+  const dayRange = Math.min(5, Math.max(1, rawDayRange));
+
   const url =
     `${env.nasaFirmsApiUrl}/${env.nasaFirmsMapKey}` +
-    `/${env.nasaFirmsSource}` +
-    `/${env.nasaFirmsArea}` +
-    `/${env.nasaFirmsDayRange}`;
+    `/${source}` +
+    `/${area}` +
+    `/${dayRange}`;
 
   let response;
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import maplibregl from "maplibre-gl";
+import { Info, Layers, Flame, X } from "lucide-react";
 import "./WildfireMap.css";
 
 const apiBase =
@@ -187,6 +188,9 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
   const [showManualLocation, setShowManualLocation] = useState(false);
   const [manualLatitude, setManualLatitude] = useState(String(DEFAULT_CENTER.latitude));
   const [manualLongitude, setManualLongitude] = useState(String(DEFAULT_CENTER.longitude));
+  // Floating-toolbar overlay panel (full map only). null when nothing is open.
+  const [mapTool, setMapTool] = useState(null);
+  const toggleMapTool = (key) => setMapTool((current) => (current === key ? null : key));
 
   const zoom = compact ? 5.15 : 5.45;
 
@@ -355,6 +359,7 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
 
   return (
     <section className={`wildfireMapCard ${compact ? "compact" : "full"}`}>
+      {compact ? (
       <header className="wildfireMapHeader">
         <h3 className="wildfireMapTitle">{title || "Wildfires near you"}</h3>
         <div className="wildfireMapControls">
@@ -401,22 +406,25 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
           </button>
         </div>
       </header>
+      ) : null}
 
-      <p className="mapStatusText">{status}</p>
-      {error ? <p className="mapErrorText">{error}</p> : null}
+      {compact ? <p className="mapStatusText">{status}</p> : null}
+      {compact && error ? <p className="mapErrorText">{error}</p> : null}
 
-      <div className="mapLegend" aria-label="Map marker legend">
-        <span className="mapLegendItem">
-          <span className="mapLegendDot mapLegendDot--confirmed" />
-          CAL FIRE / confirmed
-        </span>
-        <span className="mapLegendItem">
-          <span className="mapLegendDot mapLegendDot--hotspot" />
-          NASA FIRMS hotspot
-        </span>
-      </div>
+      {compact ? (
+        <div className="mapLegend" aria-label="Map marker legend">
+          <span className="mapLegendItem">
+            <span className="mapLegendDot mapLegendDot--confirmed" />
+            CAL FIRE / confirmed
+          </span>
+          <span className="mapLegendItem">
+            <span className="mapLegendDot mapLegendDot--hotspot" />
+            NASA FIRMS hotspot
+          </span>
+        </div>
+      ) : null}
 
-      {showManualLocation ? (
+      {compact && showManualLocation ? (
         <form className="manualLocationForm" onSubmit={handleManualSubmit}>
           <label className="mapControlLabel" htmlFor="manual-lat">
             Latitude
@@ -450,13 +458,212 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
 
       <div className={`wildfireMapContainer ${compact ? "compactMap" : "fullMap"}`}>
         <div ref={mapContainerRef} className="mapLibreCanvas" aria-label="Wildfire map" />
+
+        {!compact ? (
+          <>
+            {/* Tiny floating control bar — Set location, Radius, Apply. */}
+            <div className="mapFloatingControls" role="region" aria-label="Map area controls">
+              <button
+                type="button"
+                className="mapFloatingBtn"
+                onClick={() => setShowManualLocation((prev) => !prev)}
+                aria-pressed={showManualLocation}
+              >
+                {showManualLocation ? "Close" : "Set location"}
+              </button>
+              <label className="mapFloatingRadiusLabel">
+                <span>Radius</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="500"
+                  value={radius}
+                  onChange={(event) => setRadius(Number(event.target.value))}
+                  aria-label="Radius (miles)"
+                />
+                <span className="mapFloatingRadiusUnit">mi</span>
+              </label>
+              <button
+                type="button"
+                className="mapFloatingBtn mapFloatingBtn--primary"
+                onClick={handleRadiusApply}
+                disabled={loading}
+              >
+                Apply
+              </button>
+            </div>
+
+            {showManualLocation ? (
+              <form
+                className="mapFloatingLocationForm"
+                onSubmit={(event) => {
+                  handleManualSubmit(event);
+                  setShowManualLocation(false);
+                }}
+              >
+                <label>
+                  <span>Latitude</span>
+                  <input
+                    type="number"
+                    step="any"
+                    value={manualLatitude}
+                    onChange={(event) => setManualLatitude(event.target.value)}
+                    required
+                  />
+                </label>
+                <label>
+                  <span>Longitude</span>
+                  <input
+                    type="number"
+                    step="any"
+                    value={manualLongitude}
+                    onChange={(event) => setManualLongitude(event.target.value)}
+                    required
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="mapFloatingBtn mapFloatingBtn--primary"
+                  disabled={loading}
+                >
+                  Use
+                </button>
+              </form>
+            ) : null}
+
+            {error ? <p className="mapFloatingError" role="alert">{error}</p> : null}
+
+            <div className="mapFloatingToolbar" role="toolbar" aria-label="Map tools">
+              <button
+                type="button"
+                className={`mapToolBtn ${mapTool === "legend" ? "active" : ""}`}
+                aria-label="Legend"
+                aria-pressed={mapTool === "legend"}
+                onClick={() => toggleMapTool("legend")}
+              >
+                <Info size={18} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                className={`mapToolBtn ${mapTool === "basemap" ? "active" : ""}`}
+                aria-label="Basemap"
+                aria-pressed={mapTool === "basemap"}
+                onClick={() => toggleMapTool("basemap")}
+              >
+                <Layers size={18} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                className={`mapToolBtn ${mapTool === "list" ? "active" : ""}`}
+                aria-label="Fire list"
+                aria-pressed={mapTool === "list"}
+                onClick={() => toggleMapTool("list")}
+              >
+                <Flame size={18} strokeWidth={2} />
+              </button>
+            </div>
+
+            {mapTool === "legend" ? (
+              <div className="mapFloatingPanel" role="dialog" aria-label="Legend">
+                <div className="mapFloatingPanelHeader">
+                  <h4>Legend</h4>
+                  <button
+                    type="button"
+                    className="mapPanelClose"
+                    aria-label="Close legend"
+                    onClick={() => setMapTool(null)}
+                  >
+                    <X size={14} strokeWidth={2} />
+                  </button>
+                </div>
+                <ul className="mapLegendList">
+                  <li>
+                    <span className="mapLegendDot mapLegendDot--confirmed" />
+                    CAL FIRE incident
+                  </li>
+                  <li>
+                    <span className="mapLegendDot mapLegendDot--hotspot" />
+                    NASA FIRMS hotspot
+                  </li>
+                  <li>
+                    <span className="mapLegendDot mapLegendDot--demo" />
+                    Older / contained
+                  </li>
+                </ul>
+              </div>
+            ) : null}
+
+            {mapTool === "basemap" ? (
+              <div className="mapFloatingPanel" role="dialog" aria-label="Basemap">
+                <div className="mapFloatingPanelHeader">
+                  <h4>Basemap</h4>
+                  <button
+                    type="button"
+                    className="mapPanelClose"
+                    aria-label="Close basemap"
+                    onClick={() => setMapTool(null)}
+                  >
+                    <X size={14} strokeWidth={2} />
+                  </button>
+                </div>
+                <div className="mapBasemapTiles">
+                  {Object.entries(MAP_STYLES).map(([key, value]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`mapBasemapTile ${mapStyle === key ? "active" : ""}`}
+                      onClick={() => setMapStyle(key)}
+                    >
+                      <span className={`mapBasemapTilePreview mapBasemapTilePreview--${key}`} />
+                      <span>{value.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {mapTool === "list" ? (
+              <div className="mapFloatingPanel mapFloatingPanel--wide" role="dialog" aria-label="Fire list">
+                <div className="mapFloatingPanelHeader">
+                  <h4>Fires in view</h4>
+                  <button
+                    type="button"
+                    className="mapPanelClose"
+                    aria-label="Close fire list"
+                    onClick={() => setMapTool(null)}
+                  >
+                    <X size={14} strokeWidth={2} />
+                  </button>
+                </div>
+                {fires.length ? (
+                  <ul className="mapFireOverlayList">
+                    {fires.slice(0, 12).map((fire) => (
+                      <li key={`tool-${fire.id}`}>
+                        <Link
+                          className="mapDetailsLink"
+                          to={`/fire/${encodeURIComponent(fire.id)}`}
+                          onClick={() => setMapTool(null)}
+                        >
+                          {getFireTitle(fire)}
+                        </Link>
+                        <span>{fire.source || "Unknown source"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mapStatusText">No fires currently in view.</p>
+                )}
+              </div>
+            ) : null}
+          </>
+        ) : null}
       </div>
 
-      {fires.length ? (
+      {compact && fires.length ? (
         <section className="mapResultsSection" aria-label="Nearby fire results">
           <h4 className="mapResultsTitle">Nearby fire results</h4>
           <ul className="mapResultsList">
-            {fires.slice(0, compact ? 3 : 8).map((fire) => (
+            {fires.slice(0, 3).map((fire) => (
               <li key={`result-${fire.id}`} className="mapResultsItem">
                 <Link className="mapDetailsLink" to={`/fire/${encodeURIComponent(fire.id)}`}>
                   {getFireTitle(fire)}

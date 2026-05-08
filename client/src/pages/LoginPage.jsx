@@ -57,8 +57,8 @@ export default function LoginPage({ onAuthChange }) {
           className="loginLogo"
           src={wildfireLogo}
           alt="Wildfire Tracker logo"
-          width={260}
-          height={260}
+          width={300}
+          height={300}
         />
         <h1 className="loginTitle">Log in</h1>
         <form className="loginForm" onSubmit={handleSubmit}>

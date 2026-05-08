@@ -7,7 +7,7 @@
   box-sizing: border-box;
 }
 
-/* Left context column — quiet, divider-driven. */
+/* Left context column — quiet, divider-driven, no card. */
 .fireSidebar {
   border-right: 1px solid var(--border);
   background: var(--bg);
@@ -46,21 +46,22 @@
 }
 
 .fireMainPanel {
-  padding: 18px 22px 24px;
+  padding: 22px 24px 24px;
   box-sizing: border-box;
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
+/* Strong header — divider underneath rather than a card. */
 .fireDetailsHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--divider);
 }
 
@@ -68,12 +69,13 @@
   margin: 0;
   font-size: 24px;
   line-height: 1.15;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-h);
+  letter-spacing: -0.01em;
 }
 
 .fireDetailsSubhead {
-  margin: 4px 0 8px;
+  margin: 4px 0 10px;
   color: var(--text-muted);
   font-size: 13px;
 }
@@ -91,12 +93,12 @@
   display: inline-flex;
   align-items: center;
   height: 22px;
-  padding: 0 8px;
-  border-radius: 4px;
+  padding: 0 10px;
+  border-radius: 999px;
   font-size: 10.5px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   background: var(--code-bg);
   color: var(--text);
@@ -111,34 +113,39 @@
   text-decoration: none;
   border: 1px solid var(--border);
   color: var(--text-h);
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 8px 14px;
+  border-radius: 6px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12.5px;
   background: var(--bg);
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.backToMapBtn:hover { background: var(--code-bg); }
+.backToMapBtn:hover {
+  background: var(--code-bg);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
 
-/* Info "grid" — cleaner key/value rows, no individual card per stat. */
+/* Single info "table" panel — borderless cells with hairlines. */
 .fireInfoGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
 .fireInfoCard {
   background: transparent;
-  padding: 12px 14px;
+  padding: 14px 16px;
   box-sizing: border-box;
   border: none;
   border-right: 1px solid var(--divider);
   border-bottom: 1px solid var(--divider);
-  min-height: 60px;
+  min-height: 64px;
 }
 
 .fireInfoCard:nth-child(4n) { border-right: none; }
@@ -163,16 +170,16 @@
 .fireLowerGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.5fr);
-  gap: 14px;
+  gap: 16px;
 }
 
 .fireLargeCard,
 .fireRightStack,
 .nearbyFiresSection {
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  border-radius: 8px;
   background: var(--bg);
-  padding: 14px;
+  box-shadow: var(--shadow-md);
+  padding: 16px;
   box-sizing: border-box;
 }
 
@@ -181,8 +188,10 @@
 .nearbyFiresSection h3 {
   margin: 0 0 8px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-h);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .fireMetaLine {
@@ -197,7 +206,7 @@
   border-radius: 0 8px 8px 0;
   background: var(--orange-bg);
   color: #7c2d12;
-  padding: 10px 14px;
+  padding: 12px 16px;
   font-size: 13px;
   font-weight: 500;
 }
@@ -206,21 +215,26 @@
   display: inline-flex;
   align-items: center;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid var(--border);
-  padding: 7px 11px;
+  padding: 8px 12px;
   color: var(--text-h);
   background: var(--bg);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12.5px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.externalLinkBtn:hover { background: var(--code-bg); }
+.externalLinkBtn:hover {
+  background: var(--code-bg);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
 
 .fireMapPreview {
   width: 100%;
   height: clamp(280px, 40vh, 380px);
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   border-radius: 8px;
   overflow: hidden;
   background: var(--code-bg);
@@ -235,28 +249,26 @@
 .fireRightStack {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .resourcePill {
   display: block;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: transparent;
   color: var(--text-h);
-  padding: 8px 10px;
+  padding: 10px 10px;
   font-size: 12.5px;
   font-weight: 500;
   border-bottom: 1px solid var(--divider);
-  border-left: 0;
-  border-right: 0;
-  border-top: 0;
+  transition: background 0.12s, color 0.12s;
 }
 
 .resourcePill:last-child { border-bottom: none; }
 
 .resourcePill:hover {
-  background: var(--code-bg);
+  background: var(--accent-bg);
   color: var(--accent-strong);
 }
 
@@ -271,7 +283,7 @@
   flex-wrap: wrap;
   gap: 8px;
   justify-content: space-between;
-  padding: 8px 2px;
+  padding: 9px 2px;
   border-bottom: 1px solid var(--divider);
 }
 
@@ -283,6 +295,8 @@
   font-weight: 600;
   font-size: 13px;
 }
+
+.nearbyFireList a:hover { color: var(--accent-strong); }
 
 .nearbyFireList span {
   color: var(--text-muted);
@@ -325,7 +339,7 @@
 
 @media (max-width: 700px) {
   .fireMainPanel {
-    padding: 14px;
+    padding: 16px;
   }
 
   .fireInfoGrid {

@@ -8,13 +8,17 @@
 
 .settingsMain {
   flex: 1;
-  max-width: 100%;
-  padding: 24px 28px 32px;
+  max-width: 920px;
+  padding: 22px 24px 28px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
   overflow-y: auto;
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  margin: 18px 24px;
 }
 
 .settingsHeader {
@@ -28,10 +32,10 @@
 
 .settingsTitle {
   margin: 0;
-  font-size: 28px;
-  line-height: 1.1;
-  font-weight: 750;
-  letter-spacing: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text-h);
 }
 
@@ -100,16 +104,21 @@
   color: var(--text);
 }
 
-/* Sections */
+/* Sections — divider rows, no per-section card shadow. */
 .settingsSection {
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 18px;
+  border: none;
+  border-radius: 0;
+  padding: 18px 4px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
+  box-shadow: none;
+  border-bottom: 1px solid var(--divider);
+}
+
+.settingsSection:last-of-type {
+  border-bottom: none;
 }
 
 .settingsRow {
@@ -281,15 +290,19 @@
 
 .settingsSaveBtn {
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 12.5px;
   height: 42px;
-  padding: 0 18px;
+  padding: 0 20px;
   border: none;
-  border-radius: 10px;
-  background: var(--accent);
+  border-radius: 6px;
+  background: var(--gradient-fire);
   color: #fff;
   cursor: pointer;
-  transition: opacity 0.15s;
+  box-shadow: var(--shadow-fire);
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
 }
 
 @media (min-width: 1020px) {
@@ -311,12 +324,18 @@
 }
 
 .settingsSaveBtn:hover:not(:disabled) {
-  opacity: 0.88;
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 18px -4px rgba(220, 38, 38, 0.55);
 }
+
+.settingsSaveBtn:active:not(:disabled) { transform: translateY(0); }
 
 .settingsSaveBtn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .settingsSaveMsg {
