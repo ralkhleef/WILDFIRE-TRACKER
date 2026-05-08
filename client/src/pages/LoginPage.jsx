@@ -9,7 +9,7 @@ const apiBase =
 
 export default function LoginPage({ onAuthChange }) {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function LoginPage({ onAuthChange }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: username.trim(),
+        email: email.trim(),
           password,
         }),
       });
@@ -62,15 +62,16 @@ export default function LoginPage({ onAuthChange }) {
         />
         <h1 className="loginTitle">Log in</h1>
         <form className="loginForm" onSubmit={handleSubmit}>
-          <label className="loginLabel" htmlFor="login-username">
-            Username
+          <label className="loginLabel" htmlFor="login-email">
+            Email
             <input
-              id="login-username"
-              name="username"
+              id="login-email"
+              name="email"
+              type="email"
               className="loginInput"
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               required
             />
