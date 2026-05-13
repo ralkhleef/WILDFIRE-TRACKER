@@ -1,7 +1,7 @@
 // Handles wildfire record lookups from the database and external API integrations.
 // Public list/nearby responses are source-aware: CAL FIRE active/current
 // incidents are confirmed records, while NASA FIRMS records are recent
-// satellite hotspot clusters only.
+// satellite thermal detections only.
 const env = require('../config/env');
 const prisma = require('../config/prisma');
 const ApiError = require('../utils/ApiError');
@@ -74,7 +74,7 @@ const isInactiveStatus = (status) => {
   );
 };
 
-const shouldShowInActiveFeed = (fire) => {
+const shouldShowInActiveFeed = (fire, { firmsDays = 3 } = {}) => {
   if (!isInCalifornia(Number(fire?.latitude), Number(fire?.longitude))) return false;
 
   if (isCalFireSource(fire)) {
@@ -82,7 +82,7 @@ const shouldShowInActiveFeed = (fire) => {
   }
 
   if (isNasaSource(fire)) {
-    return isWithinLastDays(fire.reportedAt, 5);
+    return isWithinLastDays(fire.reportedAt, firmsDays);
   }
 
   return isWithinLastDays(fire.reportedAt, 7);
@@ -115,26 +115,102 @@ const mergeFireSources = (...collections) => {
   return Array.from(fireMap.values());
 };
 
-const listFires = async ({ includeExternal = false } = {}) => {
-  const storedFires = await prisma.wildfireRecord.findMany({
-    orderBy: { updatedAt: 'desc' },
-  });
+const isSeedSource = (fire) => String(fire?.source || '').toLowerCase().includes('seed');
 
-  let combined = storedFires;
+const ORANGE_COUNTY_BOUNDS = {
+  minLat: 33.34,
+  maxLat: 34.02,
+  minLng: -118.18,
+  maxLng: -117.35,
+};
 
-  if (includeExternal) {
-    const [calfireResult, nasaResult] = await Promise.allSettled([
-      calfireService.fetchActiveFires(),
-      nasaService.fetchActiveFires(),
-    ]);
+const isInOrangeCountyRegion = (fire) => {
+  const latitude = Number(fire?.latitude);
+  const longitude = Number(fire?.longitude);
+  const inBounds =
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= ORANGE_COUNTY_BOUNDS.minLat &&
+    latitude <= ORANGE_COUNTY_BOUNDS.maxLat &&
+    longitude >= ORANGE_COUNTY_BOUNDS.minLng &&
+    longitude <= ORANGE_COUNTY_BOUNDS.maxLng;
 
-    const calfireFires = calfireResult.status === 'fulfilled' ? calfireResult.value : [];
-    const nasaFires = nasaResult.status === 'fulfilled' ? nasaResult.value : [];
+  if (isNasaSource(fire)) return inBounds;
 
-    combined = mergeFireSources(storedFires, calfireFires, nasaFires);
+  const location = String(fire?.location || '').toLowerCase();
+  return inBounds || location.includes('orange county');
+};
+
+const filterByRegion = (fires, region) => {
+  if (!region) return fires;
+  if (region === 'orange-county' || region === 'orangecounty') {
+    return fires.filter(isInOrangeCountyRegion);
+  }
+  return fires;
+};
+
+// Public listFires.
+//   - includeExternal=false (default) → official CAL FIRE incidents only.
+//     Seed/demo records are only surfaced when demo=true/demoMode=true.
+//   - includeExternal=true OR includeHotspots=true → also include NASA FIRMS
+//     thermal detections as a separate "thermal_detection" layer.
+//   - source='calfire' or 'firms' → restrict to that single layer.
+const listFires = async ({
+  includeExternal = false,
+  includeHotspots = false,
+  source = null,
+  region = null,
+  demo = false,
+  firmsDays = 3,
+  firmsConfidence = 'medium',
+  minFrp = 1,
+} = {}) => {
+  const wantsHotspots = includeExternal || includeHotspots || source === 'firms';
+  const wantsOfficial = source !== 'firms';
+
+  const tasks = [];
+  if (wantsOfficial) {
+    tasks.push(calfireService.fetchActiveFires());
+  } else {
+    tasks.push(Promise.resolve([]));
+  }
+  if (wantsHotspots) {
+    tasks.push(nasaService.fetchActiveFires({ firmsDays, firmsConfidence, minFrp }));
+  } else {
+    tasks.push(Promise.resolve([]));
   }
 
-  return sortBySourcePriority(mergeFireSources(combined).filter(shouldShowInActiveFeed));
+  const [calfireResult, nasaResult, storedFires] = await Promise.allSettled([
+    ...tasks,
+    prisma.wildfireRecord.findMany({ orderBy: { updatedAt: 'desc' } }),
+  ]);
+
+  const calfireFires = calfireResult.status === 'fulfilled' ? calfireResult.value : [];
+  const nasaFires = nasaResult.status === 'fulfilled' ? nasaResult.value : [];
+  const storedRecords = storedFires.status === 'fulfilled' ? storedFires.value : [];
+  const seedFires = storedRecords.filter(isSeedSource);
+
+  // Seed/demo records are opt-in only. They should never appear in normal API
+  // responses, but when demo=true they are added even if real CAL FIRE data is
+  // available so the UI can be tested predictably.
+  const demoFires = demo && wantsOfficial && source !== 'firms' ? seedFires : [];
+  const baseOfficial = wantsOfficial ? mergeFireSources(calfireFires, demoFires) : [];
+
+  let combined;
+  if (source === 'calfire') {
+    combined = baseOfficial;
+  } else if (source === 'firms') {
+    combined = nasaFires;
+  } else {
+    combined = mergeFireSources(baseOfficial, wantsHotspots ? nasaFires : []);
+  }
+
+  return sortBySourcePriority(
+    filterByRegion(
+      combined.filter((fire) => shouldShowInActiveFeed(fire, { firmsDays })),
+      region,
+    ),
+  );
 };
 
 const getFireById = async (fireId) => {
@@ -173,8 +249,24 @@ const getNearbyFires = async ({
   longitude,
   radius = env.defaultAlertRadiusMiles,
   includeExternal = false,
+  includeHotspots = false,
+  source = null,
+  region = null,
+  demo = false,
+  firmsDays = 3,
+  firmsConfidence = 'medium',
+  minFrp = 1,
 }) => {
-  const fires = await listFires({ includeExternal });
+  const fires = await listFires({
+    includeExternal,
+    includeHotspots,
+    source,
+    region,
+    demo,
+    firmsDays,
+    firmsConfidence,
+    minFrp,
+  });
   // listFires has already restricted to CA + last 7 days; do a defensive coord check too.
   const cleaned = fires.filter((f) => isInCalifornia(Number(f.latitude), Number(f.longitude)));
   return filterNearbyFires(cleaned, latitude, longitude, radius).sort((first, second) => {

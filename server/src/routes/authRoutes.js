@@ -10,9 +10,11 @@ const {
 
 const router = express.Router();
 
+router.post('/register', signupValidation, authController.signup);
 router.post('/signup', signupValidation, authController.signup);
 router.post('/login', loginValidation, authController.login);
 router.get('/me', protect, authController.getCurrentUser);
+router.post('/logout', authController.logout);
 router.get('/google', authController.startGoogleAuth);
 router.get('/google/callback', authController.handleGoogleCallback);
 

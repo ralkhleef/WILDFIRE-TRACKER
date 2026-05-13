@@ -17,7 +17,10 @@ function getSeverity(fire) {
 }
 
 function isNasaHotspot(fire) {
-  return String(fire?.source || "").toLowerCase().includes("nasa");
+  return (
+    fire?.sourceType === "thermal_detection" ||
+    String(fire?.source || "").toLowerCase().includes("nasa")
+  );
 }
 
 function getSourceBadgeKey(fire) {
@@ -88,7 +91,7 @@ export default function AlertsPage() {
       setError("");
       try {
         const res = await fetch(
-          `${apiBase}/api/fires/nearby?latitude=${userLat}&longitude=${userLng}&radius=${DEFAULT_RADIUS}&includeExternal=true`
+          `${apiBase}/api/fires/nearby?latitude=${userLat}&longitude=${userLng}&radius=${DEFAULT_RADIUS}&source=calfire`
         );
         const body = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(body?.message || "Could not load alerts.");
@@ -209,7 +212,7 @@ export default function AlertsPage() {
                       <p className="alertCardLocation">{fire.location || "Unknown location"}</p>
                       <p className="alertCardSeverityText">
                         {isNasaHotspot(fire)
-                          ? fire.subtitle || "Satellite hotspot detection, not confirmed incident"
+                          ? fire.subtitle || "Satellite thermal detection, not a confirmed incident"
                           : `Severity: ${getSeverityLabel(fire.severity).charAt(0) + getSeverityLabel(fire.severity).slice(1).toLowerCase()}`}
                       </p>
                     </div>

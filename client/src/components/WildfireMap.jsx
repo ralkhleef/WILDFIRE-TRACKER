@@ -1,24 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import maplibregl from "maplibre-gl";
-import { Info, Layers, Flame, X } from "lucide-react";
+import { GoogleMap, InfoWindow, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { Info, Layers, Flame, MapPin, X } from "lucide-react";
 import "./WildfireMap.css";
 
 const apiBase =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
+const googleMapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || "";
 
-const DEFAULT_CENTER = { latitude: 37.2, longitude: -119.5 };
-const DEFAULT_RADIUS_MILES = 500;
-const mapTilerKey = import.meta.env.VITE_MAPTILER_KEY?.trim();
-const OPENFREEMAP_STANDARD_STYLE = "https://tiles.openfreemap.org/styles/positron";
-const OPENFREEMAP_FALLBACK_STYLE = "https://tiles.openfreemap.org/styles/liberty";
-const MAPTILER_STANDARD_STYLE = mapTilerKey
-  ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${encodeURIComponent(mapTilerKey)}`
-  : null;
-const STANDARD_STYLE = MAPTILER_STANDARD_STYLE || OPENFREEMAP_STANDARD_STYLE;
-const STANDARD_FALLBACK_STYLES = MAPTILER_STANDARD_STYLE
-  ? [OPENFREEMAP_STANDARD_STYLE, OPENFREEMAP_FALLBACK_STYLE]
-  : [OPENFREEMAP_FALLBACK_STYLE];
+// Default view shows all of California. Users can pan or tap "Use my location"
+// to recenter elsewhere.
+const DEFAULT_CENTER = { lat: 37.2, lng: -119.5 };
+const DEFAULT_ZOOM = 6;
+const DEFAULT_USER_LOCATION_RADIUS_MILES = 100;
+const DEFAULT_FULL_RADIUS_MILES = 500;
 
 const CA_BOUNDS = {
   minLat: 32.5,
@@ -27,44 +22,30 @@ const CA_BOUNDS = {
   maxLng: -114.1,
 };
 
-const MAP_STYLES = {
-  standard: {
-    label: "Standard",
-    style: STANDARD_STYLE,
+const MAP_STYLES = [
+  { key: "roadmap", label: "Standard" },
+  { key: "satellite", label: "Satellite" },
+  { key: "terrain", label: "Terrain" },
+];
+
+const THERMAL_FILTERS = {
+  recent: {
+    label: "Recent 24h",
+    firmsDays: "1",
+    firmsConfidence: "medium",
+    minFrp: "1",
   },
-  satellite: {
-    label: "Satellite",
-    style: {
-      version: 8,
-      sources: {
-        satellite: {
-          type: "raster",
-          tiles: [
-            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-          ],
-          tileSize: 256,
-          attribution:
-            "Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community",
-        },
-      },
-      layers: [{ id: "satellite", type: "raster", source: "satellite" }],
-    },
+  threeDays: {
+    label: "Last 3 days",
+    firmsDays: "3",
+    firmsConfidence: "medium",
+    minFrp: "1",
   },
-  terrain: {
-    label: "Terrain",
-    style: {
-      version: 8,
-      sources: {
-        terrain: {
-          type: "raster",
-          tiles: ["https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png"],
-          tileSize: 256,
-          attribution:
-            "Map data &copy; OpenStreetMap contributors, SRTM | Map style &copy; OpenTopoMap",
-        },
-      },
-      layers: [{ id: "terrain", type: "raster", source: "terrain" }],
-    },
+  high: {
+    label: "High confidence only",
+    firmsDays: "3",
+    firmsConfidence: "high",
+    minFrp: "1",
   },
 };
 
@@ -80,17 +61,51 @@ function isInCalifornia(lat, lng) {
 }
 
 function isNasaHotspot(fire) {
-  return String(fire?.source || "").toLowerCase().includes("nasa");
+  return (
+    fire?.sourceType === "thermal_detection" ||
+    fire?.sourceType === "satellite_hotspot" ||
+    String(fire?.source || "").toLowerCase().includes("nasa")
+  );
+}
+
+function isOfficialIncident(fire) {
+  return !isDemoFire(fire) && (fire?.sourceType === "confirmed_incident" || fire?.confirmed === true);
+}
+
+function isDemoFire(fire) {
+  return (
+    fire?.demo === true ||
+    fire?.sourceType === "demo_fire" ||
+    fire?.sourceType === "demo_fallback" ||
+    fire?.sourceLabel === "Demo Data" ||
+    String(fire?.source || "").toLowerCase().includes("seed")
+  );
+}
+
+function getAlertTitle(alert) {
+  return alert?.headline || alert?.event || "Weather Alert";
 }
 
 function getFireTitle(fire) {
+  if (isNasaHotspot(fire)) return fire?.name || "Thermal Detection";
   return fire?.name || fire?.location || "Wildfire record";
 }
 
-function getMarkerType(fire) {
-  if (isNasaHotspot(fire)) return "hotspot";
-  if (String(fire?.source || "").toLowerCase().includes("seed")) return "demo";
-  return "confirmed";
+function formatDate(value) {
+  if (!value) return "Unknown";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "Unknown";
+  return date.toLocaleString();
+}
+
+function formatNumber(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return value.toLocaleString();
+}
+
+function formatPopupValue(value, fallback = "Unknown") {
+  if (value === null || value === undefined || value === "") return fallback;
+  return value;
 }
 
 function isValidLatLng(latitude, longitude) {
@@ -104,372 +119,646 @@ function isValidLatLng(latitude, longitude) {
   );
 }
 
-function timeAgo(dateStr) {
-  if (!dateStr) return "Time unknown";
-  const diff = Date.now() - new Date(dateStr).getTime();
-  if (!Number.isFinite(diff)) return "Time unknown";
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins} min ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} hr ago`;
-  return `${Math.floor(hrs / 24)} days ago`;
+// Emoji-rendered SVG markers: official fires, thermal detections, and user location.
+function makeEmojiMarkerIcon(googleMaps, emoji, options = {}) {
+  if (!googleMaps) return undefined;
+  const size = options.size || 36;
+  const fontSize = options.fontSize || Math.round(size * 0.7);
+  const halo = options.halo || "rgba(255, 255, 255, 0.85)";
+  const svg = `\
+<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">\
+<circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 2}" fill="${halo}"/>\
+<text x="50%" y="56%" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" font-family="apple color emoji, segoe ui emoji, noto color emoji, sans-serif">${emoji}</text>\
+</svg>`;
+  return {
+    url: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`,
+    scaledSize: new googleMaps.Size(size, size),
+    anchor: new googleMaps.Point(size / 2, size - 2),
+  };
 }
 
-function createMarkerElement(type) {
-  const marker = document.createElement("span");
-  marker.className = `fireMapMarker fireMapMarker--${type}`;
-  marker.setAttribute("aria-hidden", "true");
-
-  const inner = document.createElement("span");
-  inner.className = "fireMapMarkerInner";
-  marker.appendChild(inner);
-  return marker;
+function makeFireMarkerIcon(googleMaps, fire) {
+  const hotspot = isNasaHotspot(fire);
+  return makeEmojiMarkerIcon(googleMaps, hotspot ? "⚠️" : "🔥", {
+    size: hotspot ? 28 : 36,
+    fontSize: hotspot ? 18 : 25,
+    halo: hotspot ? "rgba(249, 115, 22, 0.12)" : "rgba(220, 38, 38, 0.18)",
+  });
 }
 
-function createPopupContent(fire) {
-  const wrap = document.createElement("div");
-  wrap.className = "mapPopupCard";
-
-  const title = document.createElement("strong");
-  title.textContent = getFireTitle(fire);
-  wrap.appendChild(title);
-
-  const location = document.createElement("p");
-  location.textContent = fire.location || "Unknown location";
-  wrap.appendChild(location);
-
-  const meta = document.createElement("div");
-  meta.className = "mapPopupMeta";
-
-  const source = document.createElement("span");
-  source.className = "mapPopupBadge";
-  source.textContent = fire.source || "Unknown source";
-  meta.appendChild(source);
-
-  const reported = document.createElement("span");
-  reported.textContent = isNasaHotspot(fire)
-    ? `Detected ${timeAgo(fire.reportedAt)}`
-    : `Reported ${timeAgo(fire.reportedAt)}`;
-  meta.appendChild(reported);
-  wrap.appendChild(meta);
-
-  const note = document.createElement("p");
-  note.className = "mapPopupNote";
-  note.textContent = isNasaHotspot(fire)
-    ? fire.subtitle || "Satellite hotspot detection, not confirmed incident"
-    : fire.status
-      ? `Status: ${fire.status}`
-      : "Status unavailable";
-  wrap.appendChild(note);
-
-  const link = document.createElement("a");
-  link.className = "mapPopupLink";
-  link.href = `/fire/${encodeURIComponent(fire.id)}`;
-  link.textContent = "View details";
-  wrap.appendChild(link);
-
-  return wrap;
+function makeUserLocationIcon(googleMaps) {
+  return makeEmojiMarkerIcon(googleMaps, "📍", {
+    size: 34,
+    fontSize: 24,
+    halo: "rgba(37, 99, 235, 0.18)",
+  });
 }
 
-export default function WildfireMap({ compact = false, title, initialCenter, onLocationChange }) {
-  const mapContainerRef = useRef(null);
-  const mapRef = useRef(null);
-  const fireMarkersRef = useRef([]);
-  const selectedMarkerRef = useRef(null);
-  const standardFallbackIndexRef = useRef(0);
-  const [center, setCenter] = useState(initialCenter || DEFAULT_CENTER);
-  const [radius, setRadius] = useState(DEFAULT_RADIUS_MILES);
+export default function WildfireMap({
+  compact = false,
+  title,
+  initialCenter,
+  onLocationChange,
+}) {
+  const { isLoaded: mapsLoaded, loadError } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: googleMapsKey,
+  });
+
+  const initial = useMemo(() => {
+    if (initialCenter?.latitude && initialCenter?.longitude) {
+      return { lat: initialCenter.latitude, lng: initialCenter.longitude };
+    }
+    return DEFAULT_CENTER;
+  }, [initialCenter]);
+
+  const [center, setCenter] = useState(initial);
+  const [userLocation, setUserLocation] = useState(null);
+  const [radius, setRadius] = useState(
+    compact ? DEFAULT_USER_LOCATION_RADIUS_MILES : DEFAULT_FULL_RADIUS_MILES,
+  );
   const [fires, setFires] = useState([]);
-  const [mapStyle, setMapStyle] = useState("standard");
-  const [status, setStatus] = useState("Loading California fire data...");
+  const [mapStyle, setMapStyle] = useState("roadmap");
+  const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+  const [locationError, setLocationError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showManualLocation, setShowManualLocation] = useState(false);
-  const [manualLatitude, setManualLatitude] = useState(String(DEFAULT_CENTER.latitude));
-  const [manualLongitude, setManualLongitude] = useState(String(DEFAULT_CENTER.longitude));
-  // Floating-toolbar overlay panel (full map only). null when nothing is open.
+  const [selectedFire, setSelectedFire] = useState(null);
+  const [selectedAlert, setSelectedAlert] = useState(null);
   const [mapTool, setMapTool] = useState(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [showOfficial, setShowOfficial] = useState(true);
+  const [thermalFilter, setThermalFilter] = useState("threeDays");
+  const [showWeatherAlerts, setShowWeatherAlerts] = useState(false);
+  const [weatherAlerts, setWeatherAlerts] = useState([]);
+  const [alertsLoading, setAlertsLoading] = useState(false);
+  const [alertsError, setAlertsError] = useState("");
+  // NASA FIRMS thermal detections are OFF by default — they are NOT confirmed
+  // fire incidents and we keep them visually + semantically separate.
+  const [showHotspots, setShowHotspots] = useState(false);
+  // Demo mode is OFF by default. Picks up ?demo=true from the URL on first
+  // load. When enabled the backend includes "Demo Data" seed fires.
+  const [demoMode, setDemoMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return new URLSearchParams(window.location.search).get("demo") === "true";
+    } catch {
+      return false;
+    }
+  });
   const toggleMapTool = (key) => setMapTool((current) => (current === key ? null : key));
 
-  const zoom = compact ? 5.15 : 5.45;
+  const mapRef = useRef(null);
 
-  const parsedManualCoords = useMemo(() => {
-    const latitude = Number(manualLatitude);
-    const longitude = Number(manualLongitude);
-    if (!isValidLatLng(latitude, longitude)) return null;
-    return { latitude, longitude };
-  }, [manualLatitude, manualLongitude]);
-
-  async function fetchNearbyFires(latitude, longitude, miles = radius) {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch(
-        `${apiBase}/api/fires/nearby?latitude=${latitude}&longitude=${longitude}&radius=${miles}&includeExternal=true`,
-      );
-      const body = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        const message =
-          body?.errors?.[0]?.msg || body?.message || "Could not load nearby fires.";
-        setError(message);
+  const fetchFires = useCallback(
+    async (lat, lng, miles, options = {}) => {
+      setLoading(true);
+      setError("");
+      const includeHotspots = options.includeHotspots ?? showHotspots;
+      const includeOfficial = options.includeOfficial ?? showOfficial;
+      if (!includeOfficial && !includeHotspots) {
         setFires([]);
+        setStatus("Choose Official Fires or Thermal Hotspots to display map data.");
+        setLoading(false);
         return;
       }
+      try {
+        const params = new URLSearchParams();
+        if (includeHotspots) {
+          const filter = THERMAL_FILTERS[options.thermalFilter ?? thermalFilter] || THERMAL_FILTERS.threeDays;
+          params.set("includeHotspots", "true");
+          params.set("firmsDays", filter.firmsDays);
+          params.set("firmsConfidence", filter.firmsConfidence);
+          params.set("minFrp", filter.minFrp);
+        }
+        if (!includeOfficial && includeHotspots) params.set("source", "firms");
+        if (includeOfficial && !includeHotspots) params.set("source", "calfire");
+        const demoOn = options.demo ?? demoMode;
+        if (demoOn) params.set("demo", "true");
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          params.set("latitude", String(lat));
+          params.set("longitude", String(lng));
+          params.set("radius", String(miles));
+        }
+        const basePath = Number.isFinite(lat) && Number.isFinite(lng)
+          ? `${apiBase}/api/fires/nearby`
+          : `${apiBase}/api/fires`;
+        const url = `${basePath}?${params.toString()}`;
+        const response = await fetch(url);
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(body?.message || "Could not load California fires.");
+        }
+        const raw = Array.isArray(body?.data) ? body.data : [];
+        const safe = raw.filter((f) =>
+          isInCalifornia(Number(f.latitude), Number(f.longitude)),
+        );
+        setFires(safe);
+        const officialCount = safe.filter(isOfficialIncident).length;
+        const demoCount = safe.filter(isDemoFire).length;
+        const hotspotCount = safe.filter(isNasaHotspot).length;
+        const officialLabel = `${officialCount} official fire incident${officialCount === 1 ? "" : "s"}`;
+        const demoLabel = `${demoCount} demo fire${demoCount === 1 ? "" : "s"}`;
+        const thermalLabel = `${hotspotCount} thermal detection${hotspotCount === 1 ? "" : "s"}`;
+        if (!safe.length) {
+          setStatus(
+            body?.message ||
+              (includeOfficial
+                ? "No active official fire incidents found for this area."
+                : "No recent satellite thermal detections found for this area."),
+          );
+        } else {
+          const parts = [officialLabel];
+          if (demoCount) parts.push(demoLabel);
+          if (hotspotCount) parts.push(thermalLabel);
+          setStatus(parts.length === 1 ? `Showing ${parts[0]}` : `Showing ${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}`);
+        }
+      } catch (err) {
+        setError(err.message || "Network error while loading fires.");
+        setFires([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [showHotspots, showOfficial, thermalFilter, demoMode],
+  );
 
-      const rawFires = Array.isArray(body?.data) ? body.data : [];
-      const nextFires = rawFires.filter((f) =>
-        isInCalifornia(Number(f.latitude), Number(f.longitude)),
-      );
-      setFires(nextFires);
-      setStatus(
-        nextFires.length
-          ? `Showing ${nextFires.length} California fire record(s).`
-          : "No California fires found for this area in the last 7 days.",
-      );
-    } catch {
-      setError("Network error while loading nearby fires.");
-      setFires([]);
+  const fetchWeatherAlerts = useCallback(async () => {
+    setAlertsLoading(true);
+    setAlertsError("");
+    try {
+      const response = await fetch(`${apiBase}/api/nws-alerts?area=CA`);
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body?.message || "Could not load weather alerts.");
+      }
+      setWeatherAlerts(Array.isArray(body?.data) ? body.data : []);
+    } catch (err) {
+      setAlertsError(err.message || "Network error while loading weather alerts.");
+      setWeatherAlerts([]);
     } finally {
-      setLoading(false);
+      setAlertsLoading(false);
     }
-  }
-
-  useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
-
-    mapRef.current = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: MAP_STYLES[mapStyle].style,
-      center: [center.longitude, center.latitude],
-      zoom,
-      attributionControl: false,
-      maxBounds: [
-        [-126.2, 31.2],
-        [-112.3, 43.2],
-      ],
-    });
-
-    mapRef.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-    mapRef.current.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
-    mapRef.current.on("error", () => {
-      if (mapStyle !== "standard") return;
-      const fallbackStyle = STANDARD_FALLBACK_STYLES[standardFallbackIndexRef.current];
-      if (!fallbackStyle) return;
-      standardFallbackIndexRef.current += 1;
-      mapRef.current?.setStyle(fallbackStyle);
-    });
-
-    const resize = () => mapRef.current?.resize();
-    const timers = [0, 120, 320, 650].map((delay) => window.setTimeout(resize, delay));
-    window.addEventListener("resize", resize);
-
-    return () => {
-      timers.forEach(window.clearTimeout);
-      window.removeEventListener("resize", resize);
-      fireMarkersRef.current.forEach((marker) => marker.remove());
-      selectedMarkerRef.current?.remove();
-      mapRef.current?.remove();
-      mapRef.current = null;
-    };
-    // Create the MapLibre instance once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Default load: official incidents only. Re-fetch whenever a data layer changes.
   useEffect(() => {
-    if (!mapRef.current) return;
-    if (mapStyle === "standard") {
-      standardFallbackIndexRef.current = 0;
-    }
-    mapRef.current.setStyle(MAP_STYLES[mapStyle].style);
-    const timers = [80, 240, 520].map((delay) =>
-      window.setTimeout(() => mapRef.current?.resize(), delay),
-    );
-    return () => timers.forEach(window.clearTimeout);
-  }, [mapStyle]);
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-    mapRef.current.easeTo({
-      center: [center.longitude, center.latitude],
-      zoom,
-      duration: 450,
+    const lat = userLocation?.lat;
+    const lng = userLocation?.lng;
+    setSelectedFire(null);
+    fetchFires(lat, lng, radius, {
+      includeHotspots: showHotspots,
+      includeOfficial: showOfficial,
+      thermalFilter,
+      demo: demoMode,
     });
-
-    selectedMarkerRef.current?.remove();
-    selectedMarkerRef.current = new maplibregl.Marker({
-      element: createMarkerElement("selected"),
-      anchor: "bottom",
-    })
-      .setLngLat([center.longitude, center.latitude])
-      .setPopup(new maplibregl.Popup({ offset: 28 }).setText("Selected search center"))
-      .addTo(mapRef.current);
-  }, [center, zoom]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showHotspots, showOfficial, thermalFilter, demoMode]);
 
   useEffect(() => {
-    if (!mapRef.current) return;
-    fireMarkersRef.current.forEach((marker) => marker.remove());
-    fireMarkersRef.current = fires
-      .map((fire) => {
-        const latitude = Number(fire.latitude);
-        const longitude = Number(fire.longitude);
-        if (!isValidLatLng(latitude, longitude)) return null;
+    setSelectedAlert(null);
+    if (!showWeatherAlerts) {
+      setWeatherAlerts([]);
+      setAlertsError("");
+      return;
+    }
+    fetchWeatherAlerts();
+  }, [fetchWeatherAlerts, showWeatherAlerts]);
 
-        return new maplibregl.Marker({
-          element: createMarkerElement(getMarkerType(fire)),
-          anchor: "bottom",
-        })
-          .setLngLat([longitude, latitude])
-          .setPopup(new maplibregl.Popup({ offset: 30 }).setDOMContent(createPopupContent(fire)))
-          .addTo(mapRef.current);
-      })
-      .filter(Boolean);
-  }, [fires]);
+  const displayStatus = useMemo(() => {
+    const officialCount = fires.filter(isOfficialIncident).length;
+    const demoCount = fires.filter(isDemoFire).length;
+    const hotspotCount = fires.filter(isNasaHotspot).length;
+    const alertCount = showWeatherAlerts ? weatherAlerts.length : 0;
 
+    if (officialCount || hotspotCount || alertCount) {
+      const parts = [
+        `${officialCount} official fire${officialCount === 1 ? "" : "s"}`,
+      ];
+      if (demoMode) {
+        parts.push(`${demoCount} demo fire${demoCount === 1 ? "" : "s"}`);
+      }
+      if (showHotspots) {
+        parts.push(`${hotspotCount} thermal detection${hotspotCount === 1 ? "" : "s"}`);
+      }
+      if (showWeatherAlerts) {
+        parts.push(`${alertCount} weather alert${alertCount === 1 ? "" : "s"}`);
+      }
+      if (parts.length === 1) return `Showing ${parts[0]}`;
+      if (parts.length === 2) return `Showing ${parts[0]} and ${parts[1]}`;
+      return `Showing ${parts[0]}, ${parts[1]}, and ${parts[2]}`;
+    }
+
+    if (alertsError) return alertsError;
+    if (showWeatherAlerts && alertsLoading) return "Loading weather alerts...";
+    if (showWeatherAlerts && !weatherAlerts.length && !fires.length) {
+      return "No active official fires or weather alerts found for this area.";
+    }
+    return status;
+  }, [alertsError, alertsLoading, demoMode, fires, showHotspots, showWeatherAlerts, status, weatherAlerts]);
+
+  // When the parent supplies a new initial center, recenter and re-fetch nearby.
   useEffect(() => {
-    const nextCenter = initialCenter || DEFAULT_CENTER;
-    setCenter(nextCenter);
-    setManualLatitude(String(nextCenter.latitude));
-    setManualLongitude(String(nextCenter.longitude));
-    fetchNearbyFires(nextCenter.latitude, nextCenter.longitude, initialCenter ? 80 : DEFAULT_RADIUS_MILES);
-    // Initial fetch only, then parent coordinate changes if provided.
+    if (!initialCenter) return;
+    const next = { lat: initialCenter.latitude, lng: initialCenter.longitude };
+    setCenter(next);
+    fetchFires(next.lat, next.lng, radius);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialCenter?.latitude, initialCenter?.longitude]);
 
-  function handleManualSubmit(event) {
-    event.preventDefault();
-    setError("");
+  const handleUseMyLocation = useCallback(() => {
+    setLocationError("");
+    if (!("geolocation" in navigator)) {
+      setLocationError("Geolocation is not supported by this browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const next = { lat: coords.latitude, lng: coords.longitude };
+        setUserLocation(next);
+        setCenter(next);
+        if (mapRef.current) {
+          mapRef.current.panTo(next);
+          mapRef.current.setZoom(8);
+        }
+        if (onLocationChange) onLocationChange(coords.latitude, coords.longitude);
+        fetchFires(coords.latitude, coords.longitude, radius, {
+          includeHotspots: showHotspots,
+          includeOfficial: showOfficial,
+          thermalFilter,
+          demo: demoMode,
+        });
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationError(
+            "Location permission denied. Allow location access in your browser to use this feature.",
+          );
+        } else {
+          setLocationError("Could not get your current location. Try again later.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }, [demoMode, fetchFires, onLocationChange, radius, showHotspots, showOfficial, thermalFilter]);
 
-    if (!parsedManualCoords) {
-      setError("Please provide valid latitude and longitude values.");
+  const handleApplyRadius = useCallback(() => {
+    const lat = userLocation?.lat ?? center.lat;
+    const lng = userLocation?.lng ?? center.lng;
+    fetchFires(lat, lng, radius, {
+      includeHotspots: showHotspots,
+      includeOfficial: showOfficial,
+      thermalFilter,
+      demo: demoMode,
+    });
+  }, [demoMode, fetchFires, center.lat, center.lng, radius, userLocation, showHotspots, showOfficial, thermalFilter]);
+
+  const onMapLoad = useCallback((map) => {
+    mapRef.current = map;
+    setMapReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !window.google?.maps) return;
+    if (userLocation) return;
+    const officialMarkers = fires
+      .filter(isOfficialIncident)
+      .map((fire) => ({
+        lat: Number(fire.latitude),
+        lng: Number(fire.longitude),
+      }))
+      .filter(({ lat, lng }) => isValidLatLng(lat, lng));
+
+    if (!officialMarkers.length) return;
+
+    const maxZoom = userLocation ? 10 : 7;
+    if (officialMarkers.length === 1) {
+      mapRef.current.panTo(officialMarkers[0]);
+      mapRef.current.setZoom(maxZoom);
       return;
     }
 
-    setCenter(parsedManualCoords);
-    setStatus("Using manual location.");
-    fetchNearbyFires(parsedManualCoords.latitude, parsedManualCoords.longitude);
-    onLocationChange?.(parsedManualCoords.latitude, parsedManualCoords.longitude);
+    const bounds = new window.google.maps.LatLngBounds();
+    officialMarkers.forEach((position) => bounds.extend(position));
+    mapRef.current.fitBounds(bounds, {
+      top: 96,
+      right: 72,
+      bottom: 72,
+      left: compact ? 48 : 280,
+    });
+    window.google.maps.event.addListenerOnce(mapRef.current, "idle", () => {
+      const currentZoom = mapRef.current?.getZoom();
+      if (typeof currentZoom === "number" && currentZoom > maxZoom) {
+        mapRef.current.setZoom(maxZoom);
+      }
+    });
+  }, [compact, fires, mapReady, userLocation]);
+
+  if (!googleMapsKey) {
+    return (
+      <section className={`wildfireMapCard ${compact ? "compact" : "full"}`}>
+        <div className="mapMissingKey">
+          <h3>Google Maps key missing</h3>
+          <p>
+            Add <code>VITE_GOOGLE_MAPS_API_KEY</code> to <code>client/.env</code>
+            {" "}and restart <code>npm run dev</code> to enable the map.
+          </p>
+        </div>
+      </section>
+    );
   }
 
-  function handleRadiusApply() {
-    fetchNearbyFires(center.latitude, center.longitude, radius);
+  if (loadError) {
+    return (
+      <section className={`wildfireMapCard ${compact ? "compact" : "full"}`}>
+        <div className="mapMissingKey">
+          <h3>Google Maps failed to load</h3>
+          <p>Check your API key restrictions and network, then reload.</p>
+        </div>
+      </section>
+    );
   }
+
+  const renderMap = () => (
+    <GoogleMap
+      mapContainerClassName="googleMapCanvas"
+      center={center}
+      zoom={DEFAULT_ZOOM}
+      mapTypeId={mapStyle}
+      onLoad={onMapLoad}
+      options={{
+        disableDefaultUI: true,
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        clickableIcons: false,
+        gestureHandling: compact ? "cooperative" : "greedy",
+      }}
+    >
+      {userLocation ? (
+        <Marker
+          position={userLocation}
+          icon={makeUserLocationIcon(window.google?.maps)}
+          title="📍 Your Location"
+        />
+      ) : null}
+      {fires.map((fire) => {
+        const lat = Number(fire.latitude);
+        const lng = Number(fire.longitude);
+        if (!isValidLatLng(lat, lng)) return null;
+        return (
+          <Marker
+            key={fire.id}
+            position={{ lat, lng }}
+            icon={makeFireMarkerIcon(window.google?.maps, fire)}
+            onClick={() => setSelectedFire(fire)}
+            title={isNasaHotspot(fire) ? "⚠️ Thermal Detection" : "🔥 Fire Detected"}
+          />
+        );
+      })}
+      {selectedFire && isValidLatLng(Number(selectedFire.latitude), Number(selectedFire.longitude)) ? (
+        <InfoWindow
+          position={{
+            lat: Number(selectedFire.latitude),
+            lng: Number(selectedFire.longitude),
+          }}
+          onCloseClick={() => setSelectedFire(null)}
+          options={{
+            maxWidth: 320,
+            pixelOffset: window.google?.maps ? new window.google.maps.Size(0, -8) : undefined,
+          }}
+        >
+          {isNasaHotspot(selectedFire) ? (
+            <div className="mapPopupCard mapPopupCard--thermal">
+              <div className="mapPopupHeader">
+                <span className="mapPopupBadge mapPopupBadge--hotspot">⚠️ Thermal Detection</span>
+                <strong>{getFireTitle(selectedFire)}</strong>
+                <p>{selectedFire.location || selectedFire.county || "California"}</p>
+              </div>
+              <div className="mapPopupDetails mapPopupDetails--thermal">
+                <span>
+                  <b>Detected</b>
+                  {formatDate(selectedFire.updatedAt || selectedFire.reportedAt || selectedFire.detectedAt)}
+                </span>
+                <span>
+                  <b>Confidence</b>
+                  {formatPopupValue(selectedFire.confidence || selectedFire.confidenceLabel)}
+                </span>
+                <span>
+                  <b>Source</b>
+                  {selectedFire.sourceLabel || selectedFire.source || "NASA FIRMS"}
+                </span>
+              </div>
+              {selectedFire.subtitle ? (
+                <p className="mapPopupCaption">{selectedFire.subtitle}</p>
+              ) : null}
+            </div>
+          ) : (
+            <div className="mapPopupCard">
+              <div className="mapPopupHeader">
+                <span className={`mapPopupBadge ${isDemoFire(selectedFire) ? "mapPopupBadge--demo" : "mapPopupBadge--official"}`}>
+                  {isDemoFire(selectedFire) ? "Demo Data" : "🔥 Fire Detected"}
+                </span>
+                <strong>{getFireTitle(selectedFire)}</strong>
+                <p>{selectedFire.location || selectedFire.county || "California"}</p>
+              </div>
+              <div className="mapPopupDetails">
+                <span>
+                  <b>Containment</b>
+                  {typeof selectedFire.containment === "number" ? `${selectedFire.containment}%` : "Unknown"}
+                </span>
+                <span>
+                  <b>Size</b>
+                  {formatNumber(selectedFire.size) ? `${formatNumber(selectedFire.size)} acres` : "Unknown"}
+                </span>
+                <span>
+                  <b>Updated</b>
+                  {formatDate(selectedFire.updatedAt || selectedFire.reportedAt)}
+                </span>
+                <span>
+                  <b>Source</b>
+                  {selectedFire.sourceLabel || selectedFire.source || "CAL FIRE"}
+                </span>
+              </div>
+              <Link
+                className="mapPopupLink"
+                to={`/fire/${encodeURIComponent(selectedFire.id)}`}
+                onClick={() => setSelectedFire(null)}
+              >
+                View details
+              </Link>
+            </div>
+          )}
+        </InfoWindow>
+      ) : null}
+    </GoogleMap>
+  );
+
+  const renderAlertCard = (alert, options = {}) => {
+    const active = selectedAlert?.id === alert.id;
+    return (
+      <article
+        key={alert.id || `${alert.event}-${alert.effective}`}
+        className={`mapWeatherAlertCard ${active ? "active" : ""}`}
+      >
+        <button
+          type="button"
+          className="mapWeatherAlertButton"
+          onClick={() => setSelectedAlert(active ? null : alert)}
+        >
+          <span className="mapWeatherAlertBadge">⚠️ Weather Alert</span>
+          <strong>{getAlertTitle(alert)}</strong>
+          <span>{alert.area || "California"}</span>
+        </button>
+        {(active || options.expanded) ? (
+          <div className="mapWeatherAlertDetails">
+            <p>Severity: {alert.nwsSeverity || alert.severity || "Unknown"}</p>
+            <p>Effective: {formatDate(alert.effective || alert.onset)}</p>
+            <p>Expires: {formatDate(alert.expires)}</p>
+            <p>Source: {alert.sourceLabel || alert.sender || "National Weather Service"}</p>
+          </div>
+        ) : null}
+      </article>
+    );
+  };
 
   return (
     <section className={`wildfireMapCard ${compact ? "compact" : "full"}`}>
       {compact ? (
-      <header className="wildfireMapHeader">
-        <h3 className="wildfireMapTitle">{title || "Wildfires near you"}</h3>
-        <div className="wildfireMapControls">
-          <fieldset className="mapStyleSwitcher" aria-label="Map style">
-            {Object.entries(MAP_STYLES).map(([key, value]) => (
-              <label key={key} className={mapStyle === key ? "active" : ""}>
+        <header className="wildfireMapHeader">
+          <h3 className="wildfireMapTitle">{title || "Wildfires near you"}</h3>
+          <div className="wildfireMapControls">
+            <fieldset className="mapStyleSwitcher" aria-label="Map style">
+              {MAP_STYLES.map((style) => (
+                <label key={style.key} className={mapStyle === style.key ? "active" : ""}>
+                  <input
+                    type="radio"
+                    name={`${title || "map"}-style`}
+                    value={style.key}
+                    checked={mapStyle === style.key}
+                    onChange={() => setMapStyle(style.key)}
+                  />
+                  {style.label}
+                </label>
+              ))}
+            </fieldset>
+            <div className="mapLayerToggleGroup" aria-label="Data layers">
+              <label className={showOfficial ? "active" : ""}>
                 <input
-                  type="radio"
-                  name={`${title || "map"}-style`}
-                  value={key}
-                  checked={mapStyle === key}
-                  onChange={() => setMapStyle(key)}
+                  type="checkbox"
+                  checked={showOfficial}
+                  onChange={(event) => setShowOfficial(event.target.checked)}
                 />
-                {value.label}
+                Official Fires
               </label>
-            ))}
-          </fieldset>
-          <button
-            type="button"
-            className="mapSecondaryBtn"
-            onClick={() => setShowManualLocation((prev) => !prev)}
-          >
-            {showManualLocation ? "Hide location" : "Set location"}
-          </button>
-          <label className="mapControlLabel" htmlFor={`${title || "map"}-radius`}>
-            Radius
-          </label>
-          <input
-            id={`${title || "map"}-radius`}
-            className="mapRadiusInput"
-            type="number"
-            min="1"
-            max="500"
-            value={radius}
-            onChange={(event) => setRadius(Number(event.target.value))}
-          />
-          <button
-            type="button"
-            className="mapApplyBtn"
-            onClick={handleRadiusApply}
-            disabled={loading}
-          >
-            Apply
-          </button>
-        </div>
-      </header>
+              <label className={showHotspots ? "active" : ""}>
+                <input
+                  type="checkbox"
+                  checked={showHotspots}
+                  onChange={(event) => setShowHotspots(event.target.checked)}
+                />
+                Thermal Hotspots
+              </label>
+              <label className={showWeatherAlerts ? "active" : ""}>
+                <input
+                  type="checkbox"
+                  checked={showWeatherAlerts}
+                  onChange={(event) => setShowWeatherAlerts(event.target.checked)}
+                />
+                Weather Alerts
+              </label>
+              <label className={demoMode ? "active" : ""} title="Show 'Demo Data' seed fires for testing">
+                <input
+                  type="checkbox"
+                  checked={demoMode}
+                  onChange={(event) => setDemoMode(event.target.checked)}
+                />
+                Demo Data
+              </label>
+              {showHotspots ? (
+                <select
+                  className="mapThermalFilterSelect"
+                  value={thermalFilter}
+                  onChange={(event) => setThermalFilter(event.target.value)}
+                  aria-label="Thermal hotspot filter"
+                >
+                  {Object.entries(THERMAL_FILTERS).map(([key, filter]) => (
+                    <option key={key} value={key}>
+                      {filter.label}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              className="mapSecondaryBtn"
+              onClick={handleUseMyLocation}
+            >
+              Use my location
+            </button>
+            <label className="mapControlLabel" htmlFor={`${title || "map"}-radius`}>
+              Radius
+            </label>
+            <input
+              id={`${title || "map"}-radius`}
+              className="mapRadiusInput"
+              type="number"
+              min="1"
+              max="500"
+              value={radius}
+              onChange={(event) => setRadius(Number(event.target.value))}
+            />
+            <button
+              type="button"
+              className="mapApplyBtn"
+              onClick={handleApplyRadius}
+              disabled={loading}
+            >
+              Apply
+            </button>
+          </div>
+        </header>
       ) : null}
 
-      {compact ? <p className="mapStatusText">{status}</p> : null}
+      {compact && displayStatus ? <p className="mapStatusText">{displayStatus}</p> : null}
       {compact && error ? <p className="mapErrorText">{error}</p> : null}
+      {compact && alertsError ? <p className="mapErrorText">{alertsError}</p> : null}
+      {compact && locationError ? <p className="mapErrorText">{locationError}</p> : null}
 
       {compact ? (
         <div className="mapLegend" aria-label="Map marker legend">
-          <span className="mapLegendItem">
-            <span className="mapLegendDot mapLegendDot--confirmed" />
-            CAL FIRE / confirmed
-          </span>
-          <span className="mapLegendItem">
-            <span className="mapLegendDot mapLegendDot--hotspot" />
-            NASA FIRMS hotspot
-          </span>
+            <span className="mapLegendItem">
+              <span className="mapLegendDot mapLegendDot--confirmed" />
+            🔥 Official Fire Incident
+            </span>
+            <span className="mapLegendItem">
+              <span className="mapLegendDot mapLegendDot--hotspot" />
+            ⚠️ Thermal Detection
+            </span>
+            <span className="mapLegendItem">
+              <span className="mapLegendDot mapLegendDot--weather" />
+            ⚠️ Weather Alert
+            </span>
         </div>
       ) : null}
 
-      {compact && showManualLocation ? (
-        <form className="manualLocationForm" onSubmit={handleManualSubmit}>
-          <label className="mapControlLabel" htmlFor="manual-lat">
-            Latitude
-          </label>
-          <input
-            id="manual-lat"
-            className="mapCoordInput"
-            type="number"
-            step="any"
-            value={manualLatitude}
-            onChange={(event) => setManualLatitude(event.target.value)}
-            required
-          />
-          <label className="mapControlLabel" htmlFor="manual-lng">
-            Longitude
-          </label>
-          <input
-            id="manual-lng"
-            className="mapCoordInput"
-            type="number"
-            step="any"
-            value={manualLongitude}
-            onChange={(event) => setManualLongitude(event.target.value)}
-            required
-          />
-          <button type="submit" className="mapApplyBtn" disabled={loading}>
-            Use Location
-          </button>
-        </form>
-      ) : null}
-
       <div className={`wildfireMapContainer ${compact ? "compactMap" : "fullMap"}`}>
-        <div ref={mapContainerRef} className="mapLibreCanvas" aria-label="Wildfire map" />
+        {mapsLoaded ? renderMap() : (
+          <div className="mapLoading">Loading map…</div>
+        )}
 
         {!compact ? (
           <>
-            {/* Tiny floating control bar — Set location, Radius, Apply. */}
             <div className="mapFloatingControls" role="region" aria-label="Map area controls">
               <button
                 type="button"
                 className="mapFloatingBtn"
-                onClick={() => setShowManualLocation((prev) => !prev)}
-                aria-pressed={showManualLocation}
+                onClick={handleUseMyLocation}
               >
-                {showManualLocation ? "Close" : "Set location"}
+                <MapPin size={14} strokeWidth={2.5} />
+                Use my location
               </button>
               <label className="mapFloatingRadiusLabel">
                 <span>Radius</span>
@@ -486,52 +775,73 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
               <button
                 type="button"
                 className="mapFloatingBtn mapFloatingBtn--primary"
-                onClick={handleRadiusApply}
+                onClick={handleApplyRadius}
                 disabled={loading}
               >
                 Apply
               </button>
             </div>
 
-            {showManualLocation ? (
-              <form
-                className="mapFloatingLocationForm"
-                onSubmit={(event) => {
-                  handleManualSubmit(event);
-                  setShowManualLocation(false);
-                }}
-              >
-                <label>
-                  <span>Latitude</span>
-                  <input
-                    type="number"
-                    step="any"
-                    value={manualLatitude}
-                    onChange={(event) => setManualLatitude(event.target.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  <span>Longitude</span>
-                  <input
-                    type="number"
-                    step="any"
-                    value={manualLongitude}
-                    onChange={(event) => setManualLongitude(event.target.value)}
-                    required
-                  />
-                </label>
-                <button
-                  type="submit"
-                  className="mapFloatingBtn mapFloatingBtn--primary"
-                  disabled={loading}
+            <div className="mapLayerFloatingControls" aria-label="Data layers">
+              <label className={showOfficial ? "active" : ""}>
+                <input
+                  type="checkbox"
+                  checked={showOfficial}
+                  onChange={(event) => setShowOfficial(event.target.checked)}
+                />
+                Official Fires
+              </label>
+              <label className={showHotspots ? "active" : ""}>
+                <input
+                  type="checkbox"
+                  checked={showHotspots}
+                  onChange={(event) => setShowHotspots(event.target.checked)}
+                />
+                Thermal Hotspots
+              </label>
+              <label className={showWeatherAlerts ? "active" : ""}>
+                <input
+                  type="checkbox"
+                  checked={showWeatherAlerts}
+                  onChange={(event) => setShowWeatherAlerts(event.target.checked)}
+                />
+                Weather Alerts
+              </label>
+              <label className={demoMode ? "active" : ""} title="Show 'Demo Data' seed fires for testing">
+                <input
+                  type="checkbox"
+                  checked={demoMode}
+                  onChange={(event) => setDemoMode(event.target.checked)}
+                />
+                Demo Data
+              </label>
+              {showHotspots ? (
+                <select
+                  className="mapThermalFilterSelect"
+                  value={thermalFilter}
+                  onChange={(event) => setThermalFilter(event.target.value)}
+                  aria-label="Thermal hotspot filter"
                 >
-                  Use
-                </button>
-              </form>
-            ) : null}
+                  {Object.entries(THERMAL_FILTERS).map(([key, filter]) => (
+                    <option key={key} value={key}>
+                      {filter.label}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+            </div>
 
-            {error ? <p className="mapFloatingError" role="alert">{error}</p> : null}
+            {locationError ? (
+              <p className="mapFloatingError" role="alert">{locationError}</p>
+            ) : error ? (
+              <p className="mapFloatingError" role="alert">{error}</p>
+            ) : null}
+            {displayStatus && !error && !locationError ? (
+              <p className="mapFloatingStatus">{displayStatus}</p>
+            ) : null}
+            {alertsError ? (
+              <p className="mapFloatingAlertError" role="alert">{alertsError}</p>
+            ) : null}
 
             <div className="mapFloatingToolbar" role="toolbar" aria-label="Map tools">
               <button
@@ -579,15 +889,15 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
                 <ul className="mapLegendList">
                   <li>
                     <span className="mapLegendDot mapLegendDot--confirmed" />
-                    CAL FIRE incident
+                    🔥 Official Fire Incident
                   </li>
                   <li>
                     <span className="mapLegendDot mapLegendDot--hotspot" />
-                    NASA FIRMS hotspot
+                    ⚠️ Thermal Detection
                   </li>
                   <li>
-                    <span className="mapLegendDot mapLegendDot--demo" />
-                    Older / contained
+                    <span className="mapLegendDot mapLegendDot--weather" />
+                    ⚠️ Weather Alert
                   </li>
                 </ul>
               </div>
@@ -607,15 +917,15 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
                   </button>
                 </div>
                 <div className="mapBasemapTiles">
-                  {Object.entries(MAP_STYLES).map(([key, value]) => (
+                  {MAP_STYLES.map((style) => (
                     <button
-                      key={key}
+                      key={style.key}
                       type="button"
-                      className={`mapBasemapTile ${mapStyle === key ? "active" : ""}`}
-                      onClick={() => setMapStyle(key)}
+                      className={`mapBasemapTile ${mapStyle === style.key ? "active" : ""}`}
+                      onClick={() => setMapStyle(style.key)}
                     >
-                      <span className={`mapBasemapTilePreview mapBasemapTilePreview--${key}`} />
-                      <span>{value.label}</span>
+                      <span className={`mapBasemapTilePreview mapBasemapTilePreview--${style.key}`} />
+                      <span>{style.label}</span>
                     </button>
                   ))}
                 </div>
@@ -625,7 +935,7 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
             {mapTool === "list" ? (
               <div className="mapFloatingPanel mapFloatingPanel--wide" role="dialog" aria-label="Fire list">
                 <div className="mapFloatingPanelHeader">
-                  <h4>Fires in view</h4>
+                  <h4>Map records</h4>
                   <button
                     type="button"
                     className="mapPanelClose"
@@ -646,18 +956,52 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
                         >
                           {getFireTitle(fire)}
                         </Link>
-                        <span>{fire.source || "Unknown source"}</span>
+                        <span>{fire.sourceLabel || fire.source || "Unknown source"}</span>
                       </li>
                     ))}
                   </ul>
+	                ) : (
+	                  <p className="mapStatusText">
+                      {showOfficial
+                        ? "No active official fire incidents found for this area."
+                        : "No map records currently in view."}
+                    </p>
+	                )}
+              </div>
+            ) : null}
+
+            {showWeatherAlerts ? (
+              <div className="mapWeatherAlertOverlay" aria-label="Weather alerts">
+                <div className="mapWeatherAlertHeader">
+                  <h4>Weather Alerts</h4>
+                  {alertsLoading ? <span>Loading...</span> : <span>{weatherAlerts.length}</span>}
+                </div>
+                {weatherAlerts.length ? (
+                  <div className="mapWeatherAlertList">
+                    {weatherAlerts.slice(0, 5).map((alert) => renderAlertCard(alert))}
+                  </div>
                 ) : (
-                  <p className="mapStatusText">No fires currently in view.</p>
+                  <p className="mapWeatherAlertEmpty">
+                    {alertsLoading ? "Checking NWS alerts..." : "No active fire weather alerts found."}
+                  </p>
                 )}
               </div>
             ) : null}
           </>
         ) : null}
       </div>
+
+      {compact && showWeatherAlerts ? (
+        <section className="mapWeatherAlertCompact" aria-label="Weather alerts">
+          {weatherAlerts.length ? (
+            weatherAlerts.slice(0, 3).map((alert) => renderAlertCard(alert, { expanded: true }))
+          ) : (
+            <p className="mapStatusText">
+              {alertsLoading ? "Checking NWS alerts..." : "No active fire weather alerts found."}
+            </p>
+          )}
+        </section>
+      ) : null}
 
       {compact && fires.length ? (
         <section className="mapResultsSection" aria-label="Nearby fire results">
@@ -668,7 +1012,7 @@ export default function WildfireMap({ compact = false, title, initialCenter, onL
                 <Link className="mapDetailsLink" to={`/fire/${encodeURIComponent(fire.id)}`}>
                   {getFireTitle(fire)}
                 </Link>
-                <span>{fire.source || "Unknown source"}</span>
+                <span>{fire.sourceLabel || fire.source || "Unknown source"}</span>
               </li>
             ))}
           </ul>

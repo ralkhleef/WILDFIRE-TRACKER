@@ -1,4 +1,4 @@
-// Service for fetching and normalizing active fire data from NASA FIRMS.
+// Service for fetching and normalizing active thermal detections from NASA FIRMS.
 const env = require('../config/env');
 const {
   CA_BOUNDS,
@@ -14,19 +14,23 @@ const formatCoord = (n) =>
 const FIRMS_DEFAULT_AREA = `${CA_BOUNDS.minLng},${CA_BOUNDS.minLat},${CA_BOUNDS.maxLng},${CA_BOUNDS.maxLat}`;
 const FIRMS_DEFAULT_SOURCE = 'VIIRS_SNPP_NRT';
 const FIRMS_DEFAULT_DAY_RANGE = 3;
+const FIRMS_DEFAULT_CONFIDENCE = 'medium';
+const FIRMS_DEFAULT_MIN_FRP = 1;
+const STRONG_NOMINAL_BRIGHTNESS = 330;
 const roundToQuarter = (value) => Math.round(value * 4) / 4;
 
 const buildLabel = (latitude, longitude) => {
   const county = nearestCaliforniaCounty(latitude, longitude);
+  const coordKey = `coord:${roundToQuarter(latitude)},${roundToQuarter(longitude)}`;
   if (county) {
     return {
       location: `${county}, CA`,
-      clusterKey: `county:${county}`,
+      clusterKey: coordKey,
     };
   }
   return {
-    location: `Hotspot at ${formatCoord(latitude)}, ${formatCoord(longitude)}`,
-    clusterKey: `coord:${roundToQuarter(latitude)},${roundToQuarter(longitude)}`,
+    location: `Thermal detection at ${formatCoord(latitude)}, ${formatCoord(longitude)}`,
+    clusterKey: coordKey,
   };
 };
 
@@ -35,18 +39,6 @@ const slugify = (value) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
-
-const formatTimeAgo = (dateValue) => {
-  const date = parseFireDate(dateValue);
-  if (!date) return 'recently';
-  const diffMs = Math.max(0, Date.now() - date.getTime());
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} hr ago`;
-  return `${Math.floor(hrs / 24)} days ago`;
-};
 
 const numericOrNull = (value) => {
   const parsed = Number(value);
@@ -62,9 +54,44 @@ const confidenceRank = (value) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const hasAcceptableConfidence = (value) => {
-  if (!value) return true;
-  return confidenceRank(value) >= 2;
+const getConfidenceCode = (value) => String(value || '').trim().toLowerCase();
+
+const getDetectionFrp = (fire) =>
+  numericOrNull(fire.frp ?? fire.FRP ?? fire.power ?? fire.fire_radiative_power);
+
+const getDetectionBrightness = (fire) =>
+  numericOrNull(fire.bright_ti4 ?? fire.bright_ti5 ?? fire.brightness);
+
+const hasAcceptableConfidence = (fire, options) => {
+  const confidence = getConfidenceCode(fire.confidence);
+  const frp = getDetectionFrp(fire);
+  const brightness = getDetectionBrightness(fire);
+  const minFrp = options.minFrp;
+
+  if (confidence === 'h' || confidence === 'high') return true;
+  if (confidence === 'l' || confidence === 'low') return false;
+
+  if (options.confidence === 'high') return false;
+
+  if (confidence === 'n' || confidence === 'nominal' || confidence === 'medium') {
+    return (
+      (typeof frp === 'number' && frp >= minFrp) ||
+      (typeof brightness === 'number' && brightness >= STRONG_NOMINAL_BRIGHTNESS)
+    );
+  }
+
+  const numericConfidence = Number(confidence);
+  if (Number.isFinite(numericConfidence)) {
+    if (numericConfidence >= 80) return true;
+    if (numericConfidence < 50) return false;
+    return (
+      options.confidence !== 'high' &&
+      ((typeof frp === 'number' && frp >= minFrp) ||
+        (typeof brightness === 'number' && brightness >= STRONG_NOMINAL_BRIGHTNESS))
+    );
+  }
+
+  return false;
 };
 
 const newestByReportedAt = (a, b) => {
@@ -108,30 +135,28 @@ const groupFirmsDetections = (detections) => {
       const strongestConfidence = detectionsForArea
         .map((item) => item.confidence)
         .sort((a, b) => confidenceRank(b) - confidenceRank(a))[0];
-      const timeLabel = formatTimeAgo(latest.reportedAt);
       const subtitle =
         count === 1
-          ? `NASA FIRMS hotspot detected ${timeLabel}`
-          : `NASA FIRMS hotspot cluster: ${count} detections, latest ${timeLabel}`;
+          ? '1 satellite heat signature detected'
+          : `${count} satellite heat signatures detected`;
 
       return {
         ...latest,
         id: `firms-${slugify(group.clusterKey || group.location)}`,
-        name: group.location,
+        name: 'Thermal Detection',
         location: group.location,
         latitude: Number(avgLatitude.toFixed(5)),
         longitude: Number(avgLongitude.toFixed(5)),
         source: 'NASA FIRMS',
-        sourceType: 'satellite_hotspot',
-        status: 'hotspot_detected',
+        sourceType: 'thermal_detection',
+        label: 'Thermal Detection',
+        status: 'thermal_detection',
         confirmed: false,
         subtitle,
         details: subtitle,
-        hotspotCount: count,
-        brightness:
-          typeof strongestBrightness === 'number'
-            ? String(strongestBrightness)
-            : latest.brightness,
+        thermalDetectionCount: count,
+        brightness: typeof strongestBrightness === 'number' ? String(strongestBrightness) : latest.brightness,
+        frp: latest.frp || null,
         confidence: strongestConfidence || latest.confidence || null,
         reportedAt: latest.reportedAt,
       };
@@ -139,7 +164,7 @@ const groupFirmsDetections = (detections) => {
     .sort(newestByReportedAt);
 };
 
-const parseFirmsCsv = (csvText) => {
+const parseFirmsCsv = (csvText, options) => {
   const lines = csvText.trim().split('\n');
 
   if (lines.length < 2) {
@@ -171,11 +196,11 @@ const parseFirmsCsv = (csvText) => {
           : fire.acq_date || null;
 
       const parsedDate = parseFireDate(rawDate);
-      if (!parsedDate || !isWithinLastDays(parsedDate, 5)) {
+      if (!parsedDate || !isWithinLastDays(parsedDate, options.days)) {
         return null;
       }
 
-      if (!hasAcceptableConfidence(fire.confidence)) {
+      if (!hasAcceptableConfidence(fire, options)) {
         return null;
       }
 
@@ -191,31 +216,46 @@ const parseFirmsCsv = (csvText) => {
         size: null,
         containment: null,
         source: 'NASA FIRMS',
-        sourceType: 'satellite_hotspot',
-        status: 'hotspot_detected',
+        sourceType: 'thermal_detection',
+        label: 'Thermal Detection',
+        status: 'thermal_detection',
         confirmed: false,
-        subtitle: 'NASA FIRMS satellite hotspot',
-        details: 'NASA FIRMS satellite hotspot',
+        subtitle: 'NASA FIRMS satellite thermal detection',
+        details: 'NASA FIRMS satellite thermal detection. Not a confirmed wildfire incident.',
         brightness: fire.bright_ti4 || fire.brightness || null,
+        frp: fire.frp || null,
         confidence: fire.confidence || null,
         satellite: fire.satellite || null,
         reportedAt: parsedDate ? parsedDate.toISOString() : rawDate,
       };
     })
     .filter(Boolean)
-    // California-only at the source so we don't ship global hotspots downstream.
+    // California-only at the source so we don't ship global thermal detections downstream.
     .filter((fire) => isInCalifornia(fire.latitude, fire.longitude));
 };
 
-const fetchActiveFires = async () => {
+const normalizeOptions = (options = {}) => {
+  const days = Math.min(5, Math.max(1, Number(options.firmsDays) || FIRMS_DEFAULT_DAY_RANGE));
+  const confidence = String(options.firmsConfidence || FIRMS_DEFAULT_CONFIDENCE).toLowerCase();
+  const minFrp = Math.max(0, Number(options.minFrp) || FIRMS_DEFAULT_MIN_FRP);
+  return {
+    days,
+    confidence: confidence === 'medium' || confidence === 'nominal' || confidence === 'all'
+      ? 'medium'
+      : 'high',
+    minFrp,
+  };
+};
+
+const fetchActiveFires = async (options = {}) => {
   if (!env.nasaFirmsApiUrl || !env.nasaFirmsMapKey) {
     return [];
   }
 
+  const normalizedOptions = normalizeOptions(options);
   const source = env.nasaFirmsSource || FIRMS_DEFAULT_SOURCE;
   const area = env.nasaFirmsArea || FIRMS_DEFAULT_AREA;
-  const rawDayRange = Number(env.nasaFirmsDayRange) || FIRMS_DEFAULT_DAY_RANGE;
-  const dayRange = Math.min(5, Math.max(1, rawDayRange));
+  const dayRange = normalizedOptions.days;
 
   const url =
     `${env.nasaFirmsApiUrl}/${env.nasaFirmsMapKey}` +
@@ -239,7 +279,7 @@ const fetchActiveFires = async () => {
 
   try {
     const csvText = await response.text();
-    return groupFirmsDetections(parseFirmsCsv(csvText));
+    return groupFirmsDetections(parseFirmsCsv(csvText, normalizedOptions));
   } catch (error) {
     console.warn(`NASA FIRMS response parsing failed: ${error.message}`);
     return [];

@@ -29,17 +29,13 @@ const signupValidation = [
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long.'),
   body('name')
+    .optional({ checkFalsy: true })
     .trim()
-    .notEmpty()
-    .withMessage('Full name is required.')
-    .bail()
     .isLength({ min: 1, max: 80 })
     .withMessage('Full name must be between 1 and 80 characters long.'),
   body('username')
+    .optional({ checkFalsy: true })
     .trim()
-    .notEmpty()
-    .withMessage('Username is required.')
-    .bail()
     .isLength({ min: 3, max: 32 })
     .withMessage('Username must be between 3 and 32 characters long.')
     .matches(/^[a-zA-Z0-9_-]+$/)
@@ -66,18 +62,28 @@ const fireIdValidation = [
 ];
 
 const nearbyFireValidation = [
-  query('latitude')
-    .exists()
-    .withMessage('The latitude query parameter is required.')
-    .bail()
-    .isFloat({ min: -90, max: 90 })
-    .withMessage('Latitude must be a valid coordinate.'),
-  query('longitude')
-    .exists()
-    .withMessage('The longitude query parameter is required.')
-    .bail()
-    .isFloat({ min: -180, max: 180 })
-    .withMessage('Longitude must be a valid coordinate.'),
+  query('latitude').custom((value, { req }) => {
+    const latitude = req.query.latitude ?? req.query.lat;
+    if (typeof latitude === 'undefined') {
+      throw new Error('The latitude query parameter is required.');
+    }
+    const parsed = Number(latitude);
+    if (!Number.isFinite(parsed) || parsed < -90 || parsed > 90) {
+      throw new Error('Latitude must be a valid coordinate.');
+    }
+    return true;
+  }),
+  query('longitude').custom((value, { req }) => {
+    const longitude = req.query.longitude ?? req.query.lng;
+    if (typeof longitude === 'undefined') {
+      throw new Error('The longitude query parameter is required.');
+    }
+    const parsed = Number(longitude);
+    if (!Number.isFinite(parsed) || parsed < -180 || parsed > 180) {
+      throw new Error('Longitude must be a valid coordinate.');
+    }
+    return true;
+  }),
   query('radius')
     .optional()
     .isFloat({ gt: 0, lte: 500 })

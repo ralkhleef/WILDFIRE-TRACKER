@@ -16,6 +16,7 @@ router.get('/profile', userController.getProfile);
 router.put('/profile', profileValidation, userController.updateProfile);
 router.post('/saved-locations', savedLocationValidation, userController.addSavedLocation);
 router.get('/saved-locations', userController.getSavedLocations);
+router.put('/saved-locations/:id', savedLocationIdValidation, userController.updateSavedLocation);
 router.delete('/saved-locations/:id', savedLocationIdValidation, userController.deleteSavedLocation);
 
 module.exports = router;

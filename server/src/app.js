@@ -2,6 +2,7 @@
 const cors = require('cors');
 const express = require('express');
 
+const env = require('./config/env');
 const apiRoutes = require('./routes');
 const { passport, configurePassport } = require('./config/passport');
 const errorHandler = require('./middleware/errorMiddleware');
@@ -11,11 +12,18 @@ configurePassport();
 
 const app = express();
 
+// CORS: allow each origin in FRONTEND_URL (comma-separated) or fall back to
+// common Vite dev ports for local development. Same-origin/non-browser
+// requests (no Origin header) are allowed too.
 app.use(
- cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (env.frontendOrigins.includes(origin)) return callback(null, true);
+      return callback(null, false);
+    },
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,6 +34,7 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'WildFire-Tracker backend is running.',
     timestamp: new Date().toISOString(),
+    env: env.nodeEnv,
   });
 });
 

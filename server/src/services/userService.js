@@ -92,10 +92,32 @@ const deleteSavedLocation = async (userId, savedLocationId) => {
   });
 };
 
+const updateSavedLocation = async (userId, savedLocationId, body) => {
+  const existing = await prisma.savedLocation.findFirst({
+    where: { id: savedLocationId, userId },
+  });
+  if (!existing) {
+    throw new ApiError(404, 'Saved location not found.');
+  }
+
+  const data = {};
+  if (typeof body.label !== 'undefined') data.label = body.label;
+  if (typeof body.latitude !== 'undefined') data.latitude = Number(body.latitude);
+  if (typeof body.longitude !== 'undefined') data.longitude = Number(body.longitude);
+
+  if (!Object.keys(data).length) return existing;
+
+  return prisma.savedLocation.update({
+    where: { id: savedLocationId },
+    data,
+  });
+};
+
 module.exports = {
   getProfile,
   updateProfile,
   addSavedLocation,
   getSavedLocations,
+  updateSavedLocation,
   deleteSavedLocation,
 };

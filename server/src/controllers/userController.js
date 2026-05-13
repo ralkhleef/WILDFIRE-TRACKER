@@ -50,10 +50,25 @@ const deleteSavedLocation = asyncHandler(async (req, res) => {
   });
 });
 
+const updateSavedLocation = asyncHandler(async (req, res) => {
+  const savedLocation = await userService.updateSavedLocation(
+    req.user.id,
+    req.params.id,
+    req.body,
+  );
+
+  res.status(200).json({
+    success: true,
+    message: 'Saved location updated successfully.',
+    data: savedLocation,
+  });
+});
+
 module.exports = {
   getProfile,
   updateProfile,
   addSavedLocation,
   getSavedLocations,
+  updateSavedLocation,
   deleteSavedLocation,
 };

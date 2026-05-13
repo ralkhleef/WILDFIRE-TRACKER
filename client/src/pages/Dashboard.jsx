@@ -10,7 +10,10 @@ function getFireTitle(fire) {
 }
 
 function isNasaHotspot(fire) {
-  return String(fire?.source || "").toLowerCase().includes("nasa");
+  return (
+    fire?.sourceType === "thermal_detection" ||
+    String(fire?.source || "").toLowerCase().includes("nasa")
+  );
 }
 
 function getSourceBadgeClass(fire) {
@@ -44,11 +47,16 @@ function DashboardStat({ value, label, tone = "default" }) {
 export default function Dashboard() {
   const [fires, setFires] = useState([]);
   const [loading, setLoading] = useState(true);
+  const demoMode = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("demo") === "true"
+    : false;
 
   useEffect(() => {
     let cancelled = false;
+    const params = new URLSearchParams({ source: "calfire" });
+    if (demoMode) params.set("demo", "true");
 
-    fetch(`${apiBase}/api/fires?includeExternal=true`)
+    fetch(`${apiBase}/api/fires?${params.toString()}`)
       .then((r) => r.json())
       .then((body) => {
         if (!cancelled) setFires(Array.isArray(body?.data) ? body.data : []);
@@ -63,7 +71,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [demoMode]);
 
   const stats = useMemo(() => {
     const incidentFires = fires.filter((fire) => !isNasaHotspot(fire));
@@ -78,7 +86,7 @@ export default function Dashboard() {
     return {
       total: fires.length,
       confirmed: incidentFires.length,
-      hotspots: fires.filter(isNasaHotspot).length,
+      thermalDetections: fires.filter(isNasaHotspot).length,
       avgContainment,
     };
   }, [fires]);
@@ -97,7 +105,7 @@ export default function Dashboard() {
       <section className="dashboardStatsGrid" aria-label="Fire summary">
         <DashboardStat value={loading ? "..." : stats.total} label="Tracked records" />
         <DashboardStat value={loading ? "..." : stats.confirmed} label="Confirmed incidents" tone="danger" />
-        <DashboardStat value={loading ? "..." : stats.hotspots} label="Hotspot clusters" tone="orange" />
+        <DashboardStat value={loading ? "..." : stats.thermalDetections} label="Thermal detections" tone="orange" />
         <DashboardStat
           value={loading ? "..." : stats.avgContainment === null ? "N/A" : `${stats.avgContainment}%`}
           label="Avg containment"
@@ -134,7 +142,7 @@ export default function Dashboard() {
                       <small>{fire.location || "Unknown location"}</small>
                     </span>
                     <span className="recentFireMeta">
-                      <span className={getSourceBadgeClass(fire)}>{fire.source || "Source"}</span>
+                      <span className={getSourceBadgeClass(fire)}>{fire.sourceLabel || fire.source || "Source"}</span>
                       <small>{timeAgo(fire.reportedAt)}</small>
                     </span>
                   </Link>

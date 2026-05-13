@@ -87,6 +87,7 @@ const mapCalfireIncident = (incident) => {
     ),
     source: 'CAL FIRE',
     sourceType: 'confirmed_incident',
+    label: 'Fire Detected',
     confirmed: true,
     status: statusText.includes('contained') ? 'contained' : 'active',
     reportedAt:

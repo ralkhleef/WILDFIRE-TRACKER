@@ -1,6 +1,39 @@
+# Dependencies
 node_modules/
-# local/private files
-.DS_Store
+**/node_modules/
+
+# Environment files (never commit real secrets)
 .env
+.env.local
+.env.*.local
 client/.env
+client/.env.local
 server/.env
+server/.env.local
+
+# Build artifacts
+dist/
+build/
+client/dist/
+client/build/
+
+# Test / coverage output
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Prisma local artifacts
+prisma/dev.db
+prisma/dev.db-journal
+server/prisma/dev.db
+server/prisma/dev.db-journal
+
+secrets
