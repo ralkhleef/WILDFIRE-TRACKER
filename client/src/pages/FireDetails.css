@@ -257,6 +257,13 @@
   transition: background 0.12s, color 0.12s;
 }
 
+.resourcePillButton {
+  font: inherit;
+  border: 1px solid var(--divider);
+  cursor: pointer;
+  text-align: left;
+}
+
 .resourcePill:hover {
   background: var(--accent-bg);
   color: var(--accent-strong);

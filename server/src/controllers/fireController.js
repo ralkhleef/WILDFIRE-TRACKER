@@ -144,8 +144,37 @@ const getNearbyFires = asyncHandler(async (req, res) => {
   });
 });
 
+const createFire = asyncHandler(async (req, res) => {
+  const fire = await fireService.createWildfireRecord(req.body);
+  res.status(201).json({
+    success: true,
+    message: 'Wildfire record created successfully.',
+    data: normalizeFire(fire),
+  });
+});
+
+const updateFire = asyncHandler(async (req, res) => {
+  const fire = await fireService.updateWildfireRecord(req.params.id, req.body);
+  res.status(200).json({
+    success: true,
+    message: 'Wildfire record updated successfully.',
+    data: normalizeFire(fire),
+  });
+});
+
+const deleteFire = asyncHandler(async (req, res) => {
+  await fireService.deleteWildfireRecord(req.params.id);
+  res.status(200).json({
+    success: true,
+    message: 'Wildfire record deleted successfully.',
+  });
+});
+
 module.exports = {
   getFires,
   getFireById,
   getNearbyFires,
+  createFire,
+  updateFire,
+  deleteFire,
 };

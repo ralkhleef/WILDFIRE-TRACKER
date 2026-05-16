@@ -4,6 +4,7 @@ const express = require('express');
 const alertRoutes = require('./alertRoutes');
 const authRoutes = require('./authRoutes');
 const fireRoutes = require('./fireRoutes');
+const evacuationResourceRoutes = require('./evacuationResourceRoutes');
 const userRoutes = require('./userRoutes');
 const nwsAlertRoutes = require('./nwsAlertRoutes');
 const locationRoutes = require('./locationRoutes');
@@ -16,6 +17,7 @@ router.use('/auth', authRoutes);
 router.use('/fires', fireRoutes);
 router.use('/alerts', alertRoutes);
 router.use('/users', userRoutes);
+router.use('/evacuation-resources', evacuationResourceRoutes);
 
 // New public read-only feeds.
 router.use('/nws-alerts', nwsAlertRoutes);

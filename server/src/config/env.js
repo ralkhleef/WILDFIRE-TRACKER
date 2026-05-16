@@ -20,6 +20,11 @@ const defaultDevOrigins = [
 
 module.exports = {
   port: Number(process.env.PORT) || 5050,
+  gatewayPort: Number(process.env.GATEWAY_PORT) || 5050,
+  authServicePort: Number(process.env.AUTH_SERVICE_PORT) || 5051,
+  fireServicePort: Number(process.env.FIRE_SERVICE_PORT) || 5052,
+  alertServicePort: Number(process.env.ALERT_SERVICE_PORT) || 5053,
+  evacuationServicePort: Number(process.env.EVACUATION_SERVICE_PORT) || 5054,
   nodeEnv: process.env.NODE_ENV || 'development',
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET || 'development_only_secret',
@@ -52,4 +57,11 @@ module.exports = {
   nwsAlertsApiUrl:
     process.env.NWS_ALERTS_API_URL || 'https://api.weather.gov/alerts/active',
   defaultAlertRadiusMiles: Number(process.env.DEFAULT_ALERT_RADIUS_MILES) || 25,
+  resendApiKey: process.env.RESEND_API_KEY || '',
+  alertFromEmail: process.env.ALERT_FROM_EMAIL || 'Wildfire Tracker <alerts@example.com>',
+  alertEmailCooldownMinutes: Number(process.env.ALERT_EMAIL_COOLDOWN_MINUTES) || 60,
+  authServiceUrl: process.env.AUTH_SERVICE_URL || 'http://localhost:5051',
+  fireServiceUrl: process.env.FIRE_SERVICE_URL || 'http://localhost:5052',
+  alertServiceUrl: process.env.ALERT_SERVICE_URL || 'http://localhost:5053',
+  evacuationServiceUrl: process.env.EVACUATION_SERVICE_URL || 'http://localhost:5054',
 };

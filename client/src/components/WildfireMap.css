@@ -65,6 +65,17 @@
   pointer-events: none;
 }
 
+.mapStyleSwitcher--dashboard {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  border-color: rgba(229, 231, 235, 0.86);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 22px -16px rgba(17, 24, 39, 0.55);
+}
+
 .mapLayerToggleGroup,
 .mapLayerFloatingControls {
   display: inline-flex;
@@ -283,6 +294,14 @@
   box-shadow: 0 8px 22px -16px rgba(17, 24, 39, 0.55);
 }
 
+.mapFloatingControls--dashboard {
+  max-width: min(430px, calc(100% - 250px));
+}
+
+.mapLayerFloatingControls--dashboard {
+  max-width: min(590px, calc(100% - 32px));
+}
+
 .mapLayerFloatingControls label {
   border-radius: 999px;
   border-color: transparent;
@@ -453,6 +472,32 @@
   font-size: 12px;
   font-weight: 600;
   box-shadow: var(--shadow-sm);
+}
+
+.mapFloatingStatus--dashboard,
+.mapFloatingError--dashboard {
+  top: auto;
+  left: 12px;
+  bottom: 12px;
+  border: 1px solid rgba(229, 231, 235, 0.86);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(6px);
+  color: var(--text-h);
+  box-shadow: 0 8px 22px -16px rgba(17, 24, 39, 0.55);
+}
+
+.mapFloatingError--dashboard {
+  background: rgba(254, 242, 242, 0.97);
+  color: #991b1b;
+  border-color: rgba(248, 113, 113, 0.25);
+}
+
+.mapFloatingAlertError--dashboard {
+  top: auto;
+  left: 12px;
+  bottom: 48px;
+  border-radius: 999px;
 }
 
 /* Floating vertical icon toolbar — sits over the map. */
@@ -873,6 +918,33 @@
     max-width: none;
   }
 
+  .mapStyleSwitcher--dashboard {
+    top: auto;
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .mapFloatingControls--dashboard,
+  .mapLayerFloatingControls--dashboard {
+    right: 8px;
+  }
+
+  .mapFloatingStatus--dashboard,
+  .mapFloatingError--dashboard {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 50px;
+  }
+
+  .mapFloatingAlertError--dashboard {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 84px;
+    max-width: none;
+  }
+
   .mapWeatherAlertOverlay {
     left: 8px;
     right: 8px;
@@ -944,18 +1016,24 @@
 .mapPopupCard {
   width: min(292px, calc(100vw - 56px));
   max-width: calc(100vw - 48px);
-  padding: 8px;
+  padding: 9px;
   border: 1px solid var(--divider);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--bg);
   color: var(--text-h);
   font-family: var(--sans);
   box-sizing: border-box;
+  box-shadow: 0 10px 24px -20px rgba(17, 24, 39, 0.55);
 }
 
 .mapPopupCard--thermal {
-  border-color: rgba(217, 119, 6, 0.22);
-  background: #fffdf7;
+  border-color: rgba(249, 115, 22, 0.28);
+  background: linear-gradient(180deg, #fffaf2, #fff 46%);
+}
+
+.mapPopupCard--weather {
+  border-color: rgba(217, 119, 6, 0.3);
+  background: linear-gradient(180deg, #fffbeb, #fff 48%);
 }
 
 .mapPopupHeader {
@@ -1005,6 +1083,12 @@
   color: #92400e;
 }
 
+.mapPopupBadge--weather {
+  border-color: rgba(217, 119, 6, 0.3);
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .mapPopupBadge--demo {
   border-color: var(--border);
   background: var(--code-bg);
@@ -1018,11 +1102,6 @@
   padding: 8px 0;
   border-top: 1px solid var(--divider);
   border-bottom: 1px solid var(--divider);
-}
-
-.mapPopupDetails--thermal {
-  grid-template-columns: 1fr;
-  border-color: rgba(217, 119, 6, 0.2);
 }
 
 .mapPopupDetails span {
@@ -1039,12 +1118,22 @@
 }
 
 .mapPopupCard--thermal .mapPopupDetails span {
-  border-color: rgba(217, 119, 6, 0.18);
+  border-color: rgba(249, 115, 22, 0.18);
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.mapPopupCard--weather .mapPopupDetails span {
+  border-color: rgba(217, 119, 6, 0.2);
   background: #fffbeb;
   color: #78350f;
 }
 
 .mapPopupCard--thermal .mapPopupDetails b {
+  color: #92400e;
+}
+
+.mapPopupCard--weather .mapPopupDetails b {
   color: #92400e;
 }
 
@@ -1059,6 +1148,27 @@
 .mapPopupCaption {
   margin-top: 8px !important;
   color: var(--text-muted) !important;
+}
+
+.mapPopupExpandable {
+  margin-top: 8px;
+  border-top: 1px solid var(--divider);
+  padding-top: 8px;
+}
+
+.mapPopupExpandable summary {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mapPopupExpandable p {
+  max-height: 86px;
+  overflow-y: auto;
+  margin-top: 6px;
+  padding-right: 4px;
+  color: var(--text-muted);
 }
 
 .mapPopupLink {

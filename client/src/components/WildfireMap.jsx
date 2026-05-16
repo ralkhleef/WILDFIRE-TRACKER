@@ -86,6 +86,47 @@ function getAlertTitle(alert) {
   return alert?.headline || alert?.event || "Weather Alert";
 }
 
+const WEATHER_REGION_CENTERS = [
+  { match: /los angeles|ventura|malibu|santa monica/i, lat: 34.18, lng: -118.45 },
+  { match: /orange|santa ana|irvine|anaheim/i, lat: 33.73, lng: -117.83 },
+  { match: /san diego|riverside|san bernardino/i, lat: 33.5, lng: -116.9 },
+  { match: /santa barbara|san luis obispo|central coast/i, lat: 35.2, lng: -120.2 },
+  { match: /monterey|santa cruz|bay area|san francisco|oakland|san jose/i, lat: 37.25, lng: -121.9 },
+  { match: /sacramento|yolo|placer|el dorado|sierra/i, lat: 38.72, lng: -121.28 },
+  { match: /fresno|kern|tulare|kings|merced|madera|san joaquin/i, lat: 36.55, lng: -119.55 },
+  { match: /shasta|redding|siskiyou|modoc|lassen|trinity/i, lat: 40.7, lng: -122.0 },
+];
+
+function averageCoordinates(points) {
+  const valid = points
+    .map((point) => ({ lat: Number(point?.[1]), lng: Number(point?.[0]) }))
+    .filter((point) => isValidLatLng(point.lat, point.lng));
+  if (!valid.length) return null;
+  return {
+    lat: valid.reduce((sum, point) => sum + point.lat, 0) / valid.length,
+    lng: valid.reduce((sum, point) => sum + point.lng, 0) / valid.length,
+  };
+}
+
+function getWeatherAlertPosition(alert, index = 0) {
+  const directLat = Number(alert?.latitude ?? alert?.lat);
+  const directLng = Number(alert?.longitude ?? alert?.lng);
+  if (isValidLatLng(directLat, directLng)) return { lat: directLat, lng: directLng };
+
+  const coordinates = alert?.geometry?.coordinates;
+  const firstPolygon = Array.isArray(coordinates?.[0]?.[0]) ? coordinates[0] : coordinates;
+  if (Array.isArray(firstPolygon)) {
+    const centroid = averageCoordinates(firstPolygon);
+    if (centroid) return centroid;
+  }
+
+  const text = `${alert?.area || ""} ${alert?.headline || ""} ${alert?.event || ""}`;
+  const matched = WEATHER_REGION_CENTERS.find((region) => region.match.test(text));
+  const base = matched || { lat: 37.2, lng: -119.5 };
+  const offset = (index % 5) * 0.16;
+  return { lat: base.lat + offset, lng: base.lng + offset * 0.65 };
+}
+
 function getFireTitle(fire) {
   if (isNasaHotspot(fire)) return fire?.name || "Thermal Detection";
   return fire?.name || fire?.location || "Wildfire record";
@@ -154,12 +195,23 @@ function makeUserLocationIcon(googleMaps) {
   });
 }
 
+function makeWeatherAlertIcon(googleMaps) {
+  return makeEmojiMarkerIcon(googleMaps, "☁️", {
+    size: 32,
+    fontSize: 20,
+    halo: "rgba(217, 119, 6, 0.18)",
+  });
+}
+
 export default function WildfireMap({
   compact = false,
+  variant = "default",
   title,
   initialCenter,
   onLocationChange,
+  showCompactResults = true,
 }) {
+  const isDashboardVariant = variant === "dashboard";
   const { isLoaded: mapsLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: googleMapsKey,
@@ -218,7 +270,7 @@ export default function WildfireMap({
       const includeOfficial = options.includeOfficial ?? showOfficial;
       if (!includeOfficial && !includeHotspots) {
         setFires([]);
-        setStatus("Choose Official Fires or Thermal Hotspots to display map data.");
+        setStatus("Choose 🔥 Official Fires or ⚠️ Thermal Detection to display map data.");
         setLoading(false);
         return;
       }
@@ -257,9 +309,9 @@ export default function WildfireMap({
         const officialCount = safe.filter(isOfficialIncident).length;
         const demoCount = safe.filter(isDemoFire).length;
         const hotspotCount = safe.filter(isNasaHotspot).length;
-        const officialLabel = `${officialCount} official fire incident${officialCount === 1 ? "" : "s"}`;
+        const officialLabel = `🔥 ${officialCount} official fire incident${officialCount === 1 ? "" : "s"}`;
         const demoLabel = `${demoCount} demo fire${demoCount === 1 ? "" : "s"}`;
-        const thermalLabel = `${hotspotCount} thermal detection${hotspotCount === 1 ? "" : "s"}`;
+        const thermalLabel = `⚠️ ${hotspotCount} thermal detection${hotspotCount === 1 ? "" : "s"}`;
         if (!safe.length) {
           setStatus(
             body?.message ||
@@ -333,16 +385,16 @@ export default function WildfireMap({
 
     if (officialCount || hotspotCount || alertCount) {
       const parts = [
-        `${officialCount} official fire${officialCount === 1 ? "" : "s"}`,
+        `🔥 ${officialCount} official fire${officialCount === 1 ? "" : "s"}`,
       ];
       if (demoMode) {
         parts.push(`${demoCount} demo fire${demoCount === 1 ? "" : "s"}`);
       }
       if (showHotspots) {
-        parts.push(`${hotspotCount} thermal detection${hotspotCount === 1 ? "" : "s"}`);
+        parts.push(`⚠️ ${hotspotCount} thermal detection${hotspotCount === 1 ? "" : "s"}`);
       }
       if (showWeatherAlerts) {
-        parts.push(`${alertCount} weather alert${alertCount === 1 ? "" : "s"}`);
+        parts.push(`☁️ ${alertCount} weather alert${alertCount === 1 ? "" : "s"}`);
       }
       if (parts.length === 1) return `Showing ${parts[0]}`;
       if (parts.length === 2) return `Showing ${parts[0]} and ${parts[1]}`;
@@ -513,10 +565,23 @@ export default function WildfireMap({
             position={{ lat, lng }}
             icon={makeFireMarkerIcon(window.google?.maps, fire)}
             onClick={() => setSelectedFire(fire)}
-            title={isNasaHotspot(fire) ? "⚠️ Thermal Detection" : "🔥 Fire Detected"}
+            title={isNasaHotspot(fire) ? "⚠️ Thermal Detection" : "🔥 Official Fires"}
           />
         );
       })}
+      {showWeatherAlerts ? weatherAlerts.map((alert, index) => {
+        const position = getWeatherAlertPosition(alert, index);
+        if (!isValidLatLng(position.lat, position.lng)) return null;
+        return (
+          <Marker
+            key={alert.id || `${alert.event}-${alert.effective}-${index}`}
+            position={position}
+            icon={makeWeatherAlertIcon(window.google?.maps)}
+            onClick={() => setSelectedAlert({ ...alert, _position: position })}
+            title={`☁️ ${getAlertTitle(alert)}`}
+          />
+        );
+      }) : null}
       {selectedFire && isValidLatLng(Number(selectedFire.latitude), Number(selectedFire.longitude)) ? (
         <InfoWindow
           position={{
@@ -536,7 +601,7 @@ export default function WildfireMap({
                 <strong>{getFireTitle(selectedFire)}</strong>
                 <p>{selectedFire.location || selectedFire.county || "California"}</p>
               </div>
-              <div className="mapPopupDetails mapPopupDetails--thermal">
+              <div className="mapPopupDetails">
                 <span>
                   <b>Detected</b>
                   {formatDate(selectedFire.updatedAt || selectedFire.reportedAt || selectedFire.detectedAt)}
@@ -549,16 +614,27 @@ export default function WildfireMap({
                   <b>Source</b>
                   {selectedFire.sourceLabel || selectedFire.source || "NASA FIRMS"}
                 </span>
+                <span>
+                  <b>Type</b>
+                  Satellite hotspot
+                </span>
               </div>
               {selectedFire.subtitle ? (
                 <p className="mapPopupCaption">{selectedFire.subtitle}</p>
               ) : null}
+              <Link
+                className="mapPopupLink mapPopupLink--thermal"
+                to={`/fire/${encodeURIComponent(selectedFire.id)}`}
+                onClick={() => setSelectedFire(null)}
+              >
+                View details
+              </Link>
             </div>
           ) : (
             <div className="mapPopupCard">
               <div className="mapPopupHeader">
                 <span className={`mapPopupBadge ${isDemoFire(selectedFire) ? "mapPopupBadge--demo" : "mapPopupBadge--official"}`}>
-                  {isDemoFire(selectedFire) ? "Demo Data" : "🔥 Fire Detected"}
+                  {isDemoFire(selectedFire) ? "Demo Data" : "🔥 Official Fires"}
                 </span>
                 <strong>{getFireTitle(selectedFire)}</strong>
                 <p>{selectedFire.location || selectedFire.county || "California"}</p>
@@ -592,40 +668,54 @@ export default function WildfireMap({
           )}
         </InfoWindow>
       ) : null}
+      {selectedAlert ? (
+        <InfoWindow
+          position={selectedAlert._position || getWeatherAlertPosition(selectedAlert)}
+          onCloseClick={() => setSelectedAlert(null)}
+          options={{
+            maxWidth: 320,
+            pixelOffset: window.google?.maps ? new window.google.maps.Size(0, -8) : undefined,
+          }}
+        >
+          <div className="mapPopupCard mapPopupCard--weather">
+            <div className="mapPopupHeader">
+              <span className="mapPopupBadge mapPopupBadge--weather">☁️ Weather Alert</span>
+              <strong>{getAlertTitle(selectedAlert)}</strong>
+              <p>{selectedAlert.area || "California"}</p>
+            </div>
+            <div className="mapPopupDetails">
+              <span>
+                <b>Severity</b>
+                {selectedAlert.nwsSeverity || selectedAlert.severity || "Unknown"}
+              </span>
+              <span>
+                <b>Effective</b>
+                {formatDate(selectedAlert.effective || selectedAlert.onset)}
+              </span>
+              <span>
+                <b>Expires</b>
+                {formatDate(selectedAlert.expires)}
+              </span>
+              <span>
+                <b>Source</b>
+                {selectedAlert.sourceLabel || selectedAlert.sender || "NWS"}
+              </span>
+            </div>
+            {selectedAlert.description ? (
+              <details className="mapPopupExpandable">
+                <summary>View details</summary>
+                <p>{selectedAlert.description}</p>
+              </details>
+            ) : null}
+          </div>
+        </InfoWindow>
+      ) : null}
     </GoogleMap>
   );
 
-  const renderAlertCard = (alert, options = {}) => {
-    const active = selectedAlert?.id === alert.id;
-    return (
-      <article
-        key={alert.id || `${alert.event}-${alert.effective}`}
-        className={`mapWeatherAlertCard ${active ? "active" : ""}`}
-      >
-        <button
-          type="button"
-          className="mapWeatherAlertButton"
-          onClick={() => setSelectedAlert(active ? null : alert)}
-        >
-          <span className="mapWeatherAlertBadge">⚠️ Weather Alert</span>
-          <strong>{getAlertTitle(alert)}</strong>
-          <span>{alert.area || "California"}</span>
-        </button>
-        {(active || options.expanded) ? (
-          <div className="mapWeatherAlertDetails">
-            <p>Severity: {alert.nwsSeverity || alert.severity || "Unknown"}</p>
-            <p>Effective: {formatDate(alert.effective || alert.onset)}</p>
-            <p>Expires: {formatDate(alert.expires)}</p>
-            <p>Source: {alert.sourceLabel || alert.sender || "National Weather Service"}</p>
-          </div>
-        ) : null}
-      </article>
-    );
-  };
-
   return (
-    <section className={`wildfireMapCard ${compact ? "compact" : "full"}`}>
-      {compact ? (
+    <section className={`wildfireMapCard ${compact ? "compact" : "full"} ${isDashboardVariant ? "dashboardVariant" : ""}`}>
+      {compact && !isDashboardVariant ? (
         <header className="wildfireMapHeader">
           <h3 className="wildfireMapTitle">{title || "Wildfires near you"}</h3>
           <div className="wildfireMapControls">
@@ -650,7 +740,7 @@ export default function WildfireMap({
                   checked={showOfficial}
                   onChange={(event) => setShowOfficial(event.target.checked)}
                 />
-                Official Fires
+                🔥 Official Fires
               </label>
               <label className={showHotspots ? "active" : ""}>
                 <input
@@ -658,7 +748,7 @@ export default function WildfireMap({
                   checked={showHotspots}
                   onChange={(event) => setShowHotspots(event.target.checked)}
                 />
-                Thermal Hotspots
+                ⚠️ Thermal Detection
               </label>
               <label className={showWeatherAlerts ? "active" : ""}>
                 <input
@@ -666,7 +756,7 @@ export default function WildfireMap({
                   checked={showWeatherAlerts}
                   onChange={(event) => setShowWeatherAlerts(event.target.checked)}
                 />
-                Weather Alerts
+                ☁️ Weather Alerts
               </label>
               <label className={demoMode ? "active" : ""} title="Show 'Demo Data' seed fires for testing">
                 <input
@@ -722,16 +812,16 @@ export default function WildfireMap({
         </header>
       ) : null}
 
-      {compact && displayStatus ? <p className="mapStatusText">{displayStatus}</p> : null}
-      {compact && error ? <p className="mapErrorText">{error}</p> : null}
-      {compact && alertsError ? <p className="mapErrorText">{alertsError}</p> : null}
-      {compact && locationError ? <p className="mapErrorText">{locationError}</p> : null}
+      {compact && !isDashboardVariant && displayStatus ? <p className="mapStatusText">{displayStatus}</p> : null}
+      {compact && !isDashboardVariant && error ? <p className="mapErrorText">{error}</p> : null}
+      {compact && !isDashboardVariant && alertsError ? <p className="mapErrorText">{alertsError}</p> : null}
+      {compact && !isDashboardVariant && locationError ? <p className="mapErrorText">{locationError}</p> : null}
 
-      {compact ? (
+      {compact && !isDashboardVariant ? (
         <div className="mapLegend" aria-label="Map marker legend">
             <span className="mapLegendItem">
               <span className="mapLegendDot mapLegendDot--confirmed" />
-            🔥 Official Fire Incident
+            🔥 Official Fires
             </span>
             <span className="mapLegendItem">
               <span className="mapLegendDot mapLegendDot--hotspot" />
@@ -739,15 +829,117 @@ export default function WildfireMap({
             </span>
             <span className="mapLegendItem">
               <span className="mapLegendDot mapLegendDot--weather" />
-            ⚠️ Weather Alert
+            ☁️ Weather Alerts
             </span>
         </div>
       ) : null}
 
-      <div className={`wildfireMapContainer ${compact ? "compactMap" : "fullMap"}`}>
+      <div className={`wildfireMapContainer ${compact ? "compactMap" : "fullMap"} ${isDashboardVariant ? "dashboardMapVariant" : ""}`}>
         {mapsLoaded ? renderMap() : (
           <div className="mapLoading">Loading map…</div>
         )}
+
+        {isDashboardVariant ? (
+          <>
+            <div className="mapFloatingControls mapFloatingControls--dashboard" role="region" aria-label="Dashboard map area controls">
+              <button
+                type="button"
+                className="mapFloatingBtn"
+                onClick={handleUseMyLocation}
+              >
+                <MapPin size={14} strokeWidth={2.5} />
+                Use my location
+              </button>
+              <label className="mapFloatingRadiusLabel">
+                <span>Radius</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="500"
+                  value={radius}
+                  onChange={(event) => setRadius(Number(event.target.value))}
+                  aria-label="Radius (miles)"
+                />
+                <span className="mapFloatingRadiusUnit">mi</span>
+              </label>
+              <button
+                type="button"
+                className="mapFloatingBtn mapFloatingBtn--primary"
+                onClick={handleApplyRadius}
+                disabled={loading}
+              >
+                Apply
+              </button>
+            </div>
+
+            <div className="mapLayerFloatingControls mapLayerFloatingControls--dashboard" aria-label="Dashboard data layers">
+              <label className={showOfficial ? "active" : ""}>
+                <input
+                  type="checkbox"
+                  checked={showOfficial}
+                  onChange={(event) => setShowOfficial(event.target.checked)}
+                />
+                🔥 Official Fires
+              </label>
+              <label className={showHotspots ? "active" : ""}>
+                <input
+                  type="checkbox"
+                  checked={showHotspots}
+                  onChange={(event) => setShowHotspots(event.target.checked)}
+                />
+                ⚠️ Thermal Detection
+              </label>
+              <label className={showWeatherAlerts ? "active" : ""}>
+                <input
+                  type="checkbox"
+                  checked={showWeatherAlerts}
+                  onChange={(event) => setShowWeatherAlerts(event.target.checked)}
+                />
+                ☁️ Weather Alerts
+              </label>
+              {showHotspots ? (
+                <select
+                  className="mapThermalFilterSelect"
+                  value={thermalFilter}
+                  onChange={(event) => setThermalFilter(event.target.value)}
+                  aria-label="Thermal hotspot filter"
+                >
+                  {Object.entries(THERMAL_FILTERS).map(([key, filter]) => (
+                    <option key={key} value={key}>
+                      {filter.label}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+            </div>
+
+            <fieldset className="mapStyleSwitcher mapStyleSwitcher--dashboard" aria-label="Dashboard map style">
+              {MAP_STYLES.map((style) => (
+                <label key={style.key} className={mapStyle === style.key ? "active" : ""}>
+                  <input
+                    type="radio"
+                    name={`${title || "dashboard-map"}-style`}
+                    value={style.key}
+                    checked={mapStyle === style.key}
+                    onChange={() => setMapStyle(style.key)}
+                  />
+                  {style.label}
+                </label>
+              ))}
+            </fieldset>
+
+            {locationError ? (
+              <p className="mapFloatingError mapFloatingError--dashboard" role="alert">{locationError}</p>
+            ) : error ? (
+              <p className="mapFloatingError mapFloatingError--dashboard" role="alert">{error}</p>
+            ) : displayStatus ? (
+              <p className="mapFloatingStatus mapFloatingStatus--dashboard">{displayStatus}</p>
+            ) : null}
+            {alertsError ? (
+              <p className="mapFloatingAlertError mapFloatingAlertError--dashboard" role="alert">{alertsError}</p>
+            ) : null}
+          </>
+        ) : null}
 
         {!compact ? (
           <>
@@ -789,7 +981,7 @@ export default function WildfireMap({
                   checked={showOfficial}
                   onChange={(event) => setShowOfficial(event.target.checked)}
                 />
-                Official Fires
+                🔥 Official Fires
               </label>
               <label className={showHotspots ? "active" : ""}>
                 <input
@@ -797,7 +989,7 @@ export default function WildfireMap({
                   checked={showHotspots}
                   onChange={(event) => setShowHotspots(event.target.checked)}
                 />
-                Thermal Hotspots
+                ⚠️ Thermal Detection
               </label>
               <label className={showWeatherAlerts ? "active" : ""}>
                 <input
@@ -805,7 +997,7 @@ export default function WildfireMap({
                   checked={showWeatherAlerts}
                   onChange={(event) => setShowWeatherAlerts(event.target.checked)}
                 />
-                Weather Alerts
+                ☁️ Weather Alerts
               </label>
               <label className={demoMode ? "active" : ""} title="Show 'Demo Data' seed fires for testing">
                 <input
@@ -889,7 +1081,7 @@ export default function WildfireMap({
                 <ul className="mapLegendList">
                   <li>
                     <span className="mapLegendDot mapLegendDot--confirmed" />
-                    🔥 Official Fire Incident
+                    🔥 Official Fires
                   </li>
                   <li>
                     <span className="mapLegendDot mapLegendDot--hotspot" />
@@ -897,7 +1089,7 @@ export default function WildfireMap({
                   </li>
                   <li>
                     <span className="mapLegendDot mapLegendDot--weather" />
-                    ⚠️ Weather Alert
+                    ☁️ Weather Alerts
                   </li>
                 </ul>
               </div>
@@ -970,40 +1162,11 @@ export default function WildfireMap({
               </div>
             ) : null}
 
-            {showWeatherAlerts ? (
-              <div className="mapWeatherAlertOverlay" aria-label="Weather alerts">
-                <div className="mapWeatherAlertHeader">
-                  <h4>Weather Alerts</h4>
-                  {alertsLoading ? <span>Loading...</span> : <span>{weatherAlerts.length}</span>}
-                </div>
-                {weatherAlerts.length ? (
-                  <div className="mapWeatherAlertList">
-                    {weatherAlerts.slice(0, 5).map((alert) => renderAlertCard(alert))}
-                  </div>
-                ) : (
-                  <p className="mapWeatherAlertEmpty">
-                    {alertsLoading ? "Checking NWS alerts..." : "No active fire weather alerts found."}
-                  </p>
-                )}
-              </div>
-            ) : null}
           </>
         ) : null}
       </div>
 
-      {compact && showWeatherAlerts ? (
-        <section className="mapWeatherAlertCompact" aria-label="Weather alerts">
-          {weatherAlerts.length ? (
-            weatherAlerts.slice(0, 3).map((alert) => renderAlertCard(alert, { expanded: true }))
-          ) : (
-            <p className="mapStatusText">
-              {alertsLoading ? "Checking NWS alerts..." : "No active fire weather alerts found."}
-            </p>
-          )}
-        </section>
-      ) : null}
-
-      {compact && fires.length ? (
+      {compact && showCompactResults && fires.length ? (
         <section className="mapResultsSection" aria-label="Nearby fire results">
           <h4 className="mapResultsTitle">Nearby fire results</h4>
           <ul className="mapResultsList">

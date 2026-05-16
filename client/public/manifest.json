@@ -1,0 +1,25 @@
+{
+  "name": "Wildfire Tracker",
+  "short_name": "Wildfire",
+  "description": "Local wildfire status, alerts, maps, and evacuation resources.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffaf7",
+  "theme_color": "#dc2626",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/wildfire-tracker-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/wildfire-tracker-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

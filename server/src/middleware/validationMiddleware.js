@@ -100,6 +100,10 @@ const alertPreferenceValidation = [
     .optional()
     .isBoolean()
     .withMessage('Enabled must be a boolean value.'),
+  body('emailAlertsEnabled')
+    .optional()
+    .isBoolean()
+    .withMessage('Email alerts enabled must be a boolean value.'),
   handleValidationErrors,
 ];
 
@@ -163,6 +167,38 @@ const savedLocationIdValidation = [
   handleValidationErrors,
 ];
 
+const wildfireRecordValidation = [
+  body('name').trim().notEmpty().withMessage('Wildfire name is required.'),
+  body('location').trim().notEmpty().withMessage('Wildfire location is required.'),
+  body('latitude').isFloat({ min: -90, max: 90 }).withMessage('Latitude must be valid.'),
+  body('longitude').isFloat({ min: -180, max: 180 }).withMessage('Longitude must be valid.'),
+  body('size').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('Size must be positive.'),
+  body('containment')
+    .optional({ nullable: true })
+    .isInt({ min: 0, max: 100 })
+    .withMessage('Containment must be between 0 and 100.'),
+  body('source').optional().trim().isLength({ min: 1, max: 80 }),
+  body('status').optional({ nullable: true }).trim().isLength({ min: 1, max: 80 }),
+  body('reportedAt').optional({ nullable: true }).isISO8601().withMessage('reportedAt must be an ISO date.'),
+  handleValidationErrors,
+];
+
+const evacuationResourceValidation = [
+  body('name').trim().notEmpty().withMessage('Resource name is required.'),
+  body('type').trim().notEmpty().withMessage('Resource type is required.'),
+  body('address').trim().notEmpty().withMessage('Address is required.'),
+  body('latitude').isFloat({ min: -90, max: 90 }).withMessage('Latitude must be valid.'),
+  body('longitude').isFloat({ min: -180, max: 180 }).withMessage('Longitude must be valid.'),
+  body('capacity').optional({ nullable: true }).isInt({ min: 0 }).withMessage('Capacity must be positive.'),
+  body('openNow').optional().isBoolean().withMessage('openNow must be true or false.'),
+  handleValidationErrors,
+];
+
+const idParamValidation = [
+  param('id').trim().notEmpty().withMessage('An id is required.'),
+  handleValidationErrors,
+];
+
 module.exports = {
   signupValidation,
   loginValidation,
@@ -173,4 +209,7 @@ module.exports = {
   profileValidation,
   savedLocationValidation,
   savedLocationIdValidation,
+  wildfireRecordValidation,
+  evacuationResourceValidation,
+  idParamValidation,
 };

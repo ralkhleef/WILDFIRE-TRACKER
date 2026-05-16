@@ -91,7 +91,7 @@
 /* Map-first grid: large map left, narrow feed right. */
 .dashboardGrid {
   display: grid;
-  grid-template-columns: minmax(0, 2.4fr) minmax(280px, 0.9fr);
+  grid-template-columns: minmax(0, 2.7fr) minmax(280px, 0.82fr);
   gap: 16px;
   align-items: stretch;
   flex: 1;
@@ -111,6 +111,16 @@
 
 .dashboardMapPanel {
   padding: 10px;
+}
+
+.dashboardMapPanel .wildfireMapCard {
+  flex: 1;
+}
+
+.dashboardMapPanel .compactMap {
+  min-height: 520px;
+  height: clamp(520px, calc(100vh - 270px), 680px);
+  max-height: none;
 }
 
 .dashboardMapPanel .panelHeader {

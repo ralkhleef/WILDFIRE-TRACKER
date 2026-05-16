@@ -210,6 +210,13 @@ npm run dev
 
 Vite prints a local URL (usually `http://localhost:5173`). Open it in your browser.
 
+PWA/Add to Home Screen notes:
+
+- The app includes `client/public/manifest.json` and `client/public/service-worker.js`.
+- On iPhone/iPad Safari, open the deployed site, tap Share, then tap Add to Home Screen.
+- On desktop Chrome/Edge, use the install icon in the address bar when available.
+- The app can be installed to the home screen as a PWA.
+
 ## 9. PostgreSQL / Database Setup
 
 You only need this once per machine.
@@ -263,14 +270,30 @@ npx prisma migrate reset
 
 That command **drops the database**, re-applies all migrations, and reruns the seed.
 
-## 11. Running Backend and Frontend
+## 11. Running Microservices and Frontend
+
+The React frontend still calls only the API Gateway:
+
+```
+VITE_API_URL=http://localhost:5050
+```
+
+The backend now runs as five independent Node/Express services:
+
+| Service | Port | Start script |
+| --- | --- | --- |
+| API Gateway | 5050 | `npm run dev:gateway` |
+| Auth/User Service | 5051 | `npm run dev:auth` |
+| Fire Data Service | 5052 | `npm run dev:fire` |
+| Alert/Notification Service | 5053 | `npm run dev:alerts` |
+| Evacuation Resource Service | 5054 | `npm run dev:evacuation` |
 
 Open **two terminals**.
 
-Terminal 1 — backend:
+Terminal 1 — all backend microservices:
 ```bash
 cd server
-npm run dev
+npm run dev:microservices
 ```
 
 Terminal 2 — frontend:
@@ -278,6 +301,141 @@ Terminal 2 — frontend:
 cd client
 npm run dev
 ```
+
+Health checks:
+
+```bash
+curl http://localhost:5050/api/health
+curl http://localhost:5051/api/health
+curl http://localhost:5052/api/health
+curl http://localhost:5053/api/health
+curl http://localhost:5054/api/health
+```
+
+The old single-process `server/src/app.js` is kept as a simple legacy/reference app, but normal development should use `npm run dev:microservices`.
+
+## 12. Microservices Architecture
+
+See `docs/microservices-architecture.md` for the service responsibilities, service-to-service communication, and demo explanation.
+
+Gateway routing:
+
+- `/api/auth/*` and `/api/users/*` -> Auth/User Service on `5051`
+- `/api/fires/*`, `/api/nws-alerts/*`, `/api/locations/*`, `/api/resources/*`, `/api/air-quality` -> Fire Data Service on `5052`
+- `/api/alerts/*` -> Alert/Notification Service on `5053`
+- `/api/evacuation-resources/*` -> Evacuation Resource Service on `5054`
+
+All protected routes still use:
+
+```http
+Authorization: Bearer <token>
+```
+
+All services use the same PostgreSQL database through Prisma and the same `JWT_SECRET`, which keeps local setup simple for the assignment.
+
+## 13. Assignment 3/4 Completion Map
+
+Implemented backend/full-stack features:
+
+- Express backend with CORS, JSON parsing, centralized 404/error handling, env config, graceful Prisma shutdown.
+- PostgreSQL through Prisma for users, saved locations, alert preferences, wildfire records, and evacuation resources.
+- Auth flow: signup/register, login, JWT protected routes, current user/profile route, logout endpoint.
+- CRUD: profile update/delete, saved locations create/read/update/delete, alert preference upsert/read, internal wildfire record create/read/update/delete, evacuation resource create/read/update/delete.
+- Frontend pages use backend data for Dashboard, Map, Fire Details, Alerts, Settings/Profile, and Resources.
+- Location features: browser geolocation, nearby fire lookup, saved monitored locations, location-based alert check.
+- Notification support: alert preferences in database, `/api/alerts/local` nearby-fire check, Alerts UI notification toggle, browser notification permission/request.
+- Email notifications: Resend-backed email alerts, persisted email opt-in, and duplicate-email cooldown.
+- PWA/Add to Home Screen support: `manifest.json`, Apple touch icon, theme metadata, and a lightweight service worker.
+- Social sharing: Fire Details has Facebook, X, and TikTok/Instagram-style copy template.
+- Evacuation resources: seeded mock shelter/evacuation data in PostgreSQL plus nearby resource endpoint and Resources UI.
+- True local microservices: API Gateway plus Auth/User, Fire Data, Alert/Notification, and Evacuation Resource services on separate ports.
+- C4 diagrams: `docs/c4-context.md`, `docs/c4-container.md`, `docs/c4-component.md`.
+- API testing docs: `docs/api-testing.md`.
+- Demo checklist: `docs/demo-checklist.md`.
+
+## 14. API Testing
+
+See `docs/api-testing.md` for Postman/Insomnia setup and curl commands covering auth, CRUD, local alerts, wildfire records, and evacuation resources.
+
+Quick smoke test:
+
+```bash
+curl http://localhost:5050/api/health
+curl "http://localhost:5050/api/fires?demo=true"
+curl "http://localhost:5050/api/evacuation-resources/nearby?latitude=33.6846&longitude=-117.8265&radius=75"
+```
+
+Email alert test:
+
+```bash
+TOKEN="paste-login-token"
+
+curl -X POST http://localhost:5050/api/alerts \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"radius":75,"enabled":true,"emailAlertsEnabled":true}'
+
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:5050/api/alerts/local?latitude=33.6846&longitude=-117.8265&radius=75"
+```
+
+The response includes `data.emailNotification`. It will show `sent: true` when Resend is configured and an email was sent, or a skipped reason when email is disabled, Resend is not configured, no fires were found, or the cooldown prevented a duplicate.
+
+## 15. Production Build
+
+Backend:
+
+```bash
+cd server
+npm install
+npm run prisma:generate
+npm run prisma:migrate
+npm start
+```
+
+Frontend:
+
+```bash
+cd client
+npm install
+npm run build
+npm run preview
+```
+
+## 16. AWS Deployment Readiness
+
+- Backend can deploy to Elastic Beanstalk, EC2, ECS, or Lambda/API Gateway. Set `PORT`, `NODE_ENV=production`, `DATABASE_URL`, `JWT_SECRET`, and `FRONTEND_URL` in the AWS environment/secret manager.
+- Database should be a managed PostgreSQL instance such as Amazon RDS. Run Prisma migrations during deployment or from a trusted admin machine.
+- Frontend can deploy to S3 + CloudFront, Amplify, or be served by the same Node/Express host. Set `VITE_API_URL` to the deployed backend URL before `npm run build`.
+- Use CloudWatch Logs for backend logs and alarms.
+- Use HTTPS with AWS Certificate Manager (ACM). Add the HTTPS frontend domain to `FRONTEND_URL` for CORS.
+- Store Google/NASA/API keys in environment variables or AWS Secrets Manager, never in Git.
+
+## 17. Resend Email Alerts
+
+Install dependency:
+
+```bash
+cd server
+npm install resend
+```
+
+Add these to `server/.env`:
+
+```bash
+RESEND_API_KEY=re_your_key_here
+ALERT_FROM_EMAIL="Wildfire Tracker <alerts@your-verified-domain.com>"
+ALERT_EMAIL_COOLDOWN_MINUTES=60
+```
+
+For a quick Resend test account, use a verified sender/domain from the Resend dashboard. In the live demo:
+
+1. Start microservices with `npm run dev:microservices`.
+2. Log in as `demo@example.com`.
+3. Open Settings and enable Email alerts.
+4. Save preferences.
+5. Click Check local alerts or call `/api/alerts/local`.
+6. Show the `emailNotification.sent` field in the API response and the email received in the inbox.
 
 Backend: `http://localhost:5050`
 Frontend: `http://localhost:5173`

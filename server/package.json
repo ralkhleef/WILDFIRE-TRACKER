@@ -6,6 +6,18 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "start:gateway": "node src/gateway/server.js",
+    "start:auth": "node src/microservices/authUser/server.js",
+    "start:fire": "node src/microservices/fireData/server.js",
+    "start:alerts": "node src/microservices/alertNotification/server.js",
+    "start:evacuation": "node src/microservices/evacuationResource/server.js",
+    "start:microservices": "concurrently -n gateway,auth,fire,alerts,evac -c red,blue,yellow,magenta,green \"npm run start:gateway\" \"npm run start:auth\" \"npm run start:fire\" \"npm run start:alerts\" \"npm run start:evacuation\"",
+    "dev:gateway": "nodemon src/gateway/server.js",
+    "dev:auth": "nodemon src/microservices/authUser/server.js",
+    "dev:fire": "nodemon src/microservices/fireData/server.js",
+    "dev:alerts": "nodemon src/microservices/alertNotification/server.js",
+    "dev:evacuation": "nodemon src/microservices/evacuationResource/server.js",
+    "dev:microservices": "concurrently -n gateway,auth,fire,alerts,evac -c red,blue,yellow,magenta,green \"npm run dev:gateway\" \"npm run dev:auth\" \"npm run dev:fire\" \"npm run dev:alerts\" \"npm run dev:evacuation\"",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
     "prisma:studio": "npx prisma studio",
@@ -33,9 +45,11 @@
     "jsonwebtoken": "^9.0.2",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "pg": "^8.13.3"
+    "pg": "^8.13.3",
+    "resend": "^6.12.3"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.9",
     "prisma": "^6.6.0"
   }

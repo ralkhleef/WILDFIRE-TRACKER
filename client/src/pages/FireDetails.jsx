@@ -157,6 +157,24 @@ function getGoogleMapsSearchUrl(fire, query) {
   return `https://www.google.com/maps/search/${encodedQuery}+near+${location}`;
 }
 
+function getShareMessage(fire) {
+  const where = fire?.location || "this area";
+  const name = fire?.name ? `${fire.name} - ` : "";
+  const status = fire?.status ? ` Status: ${fire.status}.` : "";
+  return `${name}Wildfire reported near ${where}.${status} Stay alert, follow evacuation guidance, and stay safe.`;
+}
+
+function buildShareLinks(fire) {
+  const message = getShareMessage(fire);
+  const url = typeof window !== "undefined" ? window.location.href : "";
+  return {
+    message,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(message)}`,
+    x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(url)}`,
+    template: `${message}\n\nMap/details: ${url}\n\n#WildfireSafety #EvacuationReady`,
+  };
+}
+
 export default function FireDetails() {
   const { id } = useParams();
   const [fire, setFire] = useState(null);
@@ -246,6 +264,11 @@ export default function FireDetails() {
   }, [id]);
 
   const satelliteUrl = useMemo(() => getSatelliteUrl(fire), [fire]);
+  const share = useMemo(() => buildShareLinks(fire), [fire]);
+
+  async function handleCopyShare() {
+    await navigator.clipboard?.writeText(share.template);
+  }
 
   if (loading) {
     return (
@@ -318,6 +341,22 @@ export default function FireDetails() {
               <p>{value}</p>
             </article>
           ))}
+        </section>
+
+        <section className="fireContentCard">
+          <h2>Share</h2>
+          <p className="fireMetaLine">{share.message}</p>
+          <div className="resourceGrid">
+            <a className="resourcePill" href={share.facebook} target="_blank" rel="noreferrer">
+              Share on Facebook
+            </a>
+            <a className="resourcePill" href={share.x} target="_blank" rel="noreferrer">
+              Share on X
+            </a>
+            <button type="button" className="resourcePill resourcePillButton" onClick={handleCopyShare}>
+              Copy TikTok / Instagram template
+            </button>
+          </div>
         </section>
 
         <section className="fireContentCard">

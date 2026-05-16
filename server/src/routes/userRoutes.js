@@ -14,6 +14,7 @@ const router = express.Router();
 router.use(protect);
 router.get('/profile', userController.getProfile);
 router.put('/profile', profileValidation, userController.updateProfile);
+router.delete('/profile', userController.deleteProfile);
 router.post('/saved-locations', savedLocationValidation, userController.addSavedLocation);
 router.get('/saved-locations', userController.getSavedLocations);
 router.put('/saved-locations/:id', savedLocationIdValidation, userController.updateSavedLocation);

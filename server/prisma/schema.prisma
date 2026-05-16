@@ -36,13 +36,15 @@ model SavedLocation {
 }
 
 model AlertPreference {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  radius    Int      @default(25)
-  enabled   Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  radius             Int       @default(25)
+  enabled            Boolean   @default(true)
+  emailAlertsEnabled Boolean   @default(false)
+  lastAlertSentAt    DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model WildfireRecord {
@@ -60,4 +62,26 @@ model WildfireRecord {
   updatedAt   DateTime @updatedAt
 
   @@index([latitude, longitude])
+}
+
+model EvacuationResource {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  address     String
+  city        String?
+  county      String?
+  state       String   @default("CA")
+  latitude    Float
+  longitude   Float
+  phone       String?
+  website     String?
+  capacity    Int?
+  openNow     Boolean  @default(true)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([latitude, longitude])
+  @@index([type])
 }

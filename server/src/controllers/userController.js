@@ -21,6 +21,15 @@ const updateProfile = asyncHandler(async (req, res) => {
   });
 });
 
+const deleteProfile = asyncHandler(async (req, res) => {
+  await userService.deleteProfile(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    message: 'User account deleted successfully.',
+  });
+});
+
 const addSavedLocation = asyncHandler(async (req, res) => {
   const savedLocation = await userService.addSavedLocation(req.user.id, req.body);
 
@@ -67,6 +76,7 @@ const updateSavedLocation = asyncHandler(async (req, res) => {
 module.exports = {
   getProfile,
   updateProfile,
+  deleteProfile,
   addSavedLocation,
   getSavedLocations,
   updateSavedLocation,

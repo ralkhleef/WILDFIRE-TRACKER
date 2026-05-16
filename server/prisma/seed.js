@@ -75,6 +75,74 @@ const sampleWildfires = [
   },
 ];
 
+const evacuationResources = [
+  {
+    name: 'Orange County Emergency Operations Center',
+    type: 'evacuation_center',
+    address: '2644 Santiago Canyon Rd',
+    city: 'Orange',
+    county: 'Orange County',
+    latitude: 33.7791,
+    longitude: -117.7654,
+    phone: '714-628-7008',
+    website: 'https://ocsheriff.gov/',
+    capacity: 250,
+    notes: 'Demo evacuation coordination point near canyon communities.',
+  },
+  {
+    name: 'Anaheim Downtown Community Center',
+    type: 'shelter',
+    address: '250 E Center St',
+    city: 'Anaheim',
+    county: 'Orange County',
+    latitude: 33.8353,
+    longitude: -117.9118,
+    phone: '714-765-4500',
+    website: 'https://www.anaheim.net/',
+    capacity: 180,
+    notes: 'Mock shelter entry for assignment testing.',
+  },
+  {
+    name: 'Irvine Civic Center Emergency Point',
+    type: 'evacuation_center',
+    address: '1 Civic Center Plaza',
+    city: 'Irvine',
+    county: 'Orange County',
+    latitude: 33.6861,
+    longitude: -117.8265,
+    phone: '949-724-6000',
+    website: 'https://www.cityofirvine.org/',
+    capacity: 200,
+    notes: 'Use official city channels during an actual evacuation.',
+  },
+  {
+    name: 'Mission Viejo Animal Services',
+    type: 'pet_shelter',
+    address: '28095 Hillcrest',
+    city: 'Mission Viejo',
+    county: 'Orange County',
+    latitude: 33.5539,
+    longitude: -117.6704,
+    phone: '949-470-3045',
+    website: 'https://cityofmissionviejo.org/',
+    capacity: 60,
+    notes: 'Pet support resource for demo planning.',
+  },
+  {
+    name: 'Providence Mission Hospital',
+    type: 'hospital',
+    address: '27700 Medical Center Rd',
+    city: 'Mission Viejo',
+    county: 'Orange County',
+    latitude: 33.5616,
+    longitude: -117.6655,
+    phone: '949-364-1400',
+    website: 'https://www.providence.org/',
+    capacity: null,
+    notes: 'Nearby medical resource.',
+  },
+];
+
 async function main() {
   const password = await bcrypt.hash('password123', 10);
   const demoUser = await prisma.user.upsert({
@@ -101,11 +169,13 @@ async function main() {
     update: {
       radius: 50,
       enabled: true,
+      emailAlertsEnabled: false,
     },
     create: {
       userId: demoUser.id,
       radius: 50,
       enabled: true,
+      emailAlertsEnabled: false,
     },
   });
 
@@ -126,7 +196,14 @@ async function main() {
     data: sampleWildfires,
   });
 
-  console.log(`Seeded ${sampleWildfires.length} wildfire records and demo@example.com.`);
+  await prisma.evacuationResource.deleteMany({});
+  await prisma.evacuationResource.createMany({
+    data: evacuationResources,
+  });
+
+  console.log(
+    `Seeded ${sampleWildfires.length} wildfire records, ${evacuationResources.length} evacuation resources, and demo@example.com.`,
+  );
 }
 
 main()

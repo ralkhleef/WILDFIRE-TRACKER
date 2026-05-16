@@ -113,9 +113,15 @@ const updateSavedLocation = async (userId, savedLocationId, body) => {
   });
 };
 
+const deleteProfile = async (userId) =>
+  prisma.user.delete({
+    where: { id: userId },
+  });
+
 module.exports = {
   getProfile,
   updateProfile,
+  deleteProfile,
   addSavedLocation,
   getSavedLocations,
   updateSavedLocation,

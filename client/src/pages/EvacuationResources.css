@@ -199,6 +199,94 @@
   padding: 4px 0 0;
 }
 
+.nearbyResourcesSection {
+  padding: 4px 0 2px;
+}
+
+.resourceLocationBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.nearbyResourceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.nearbyResourceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 160px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px;
+}
+
+.nearbyResourceCard h3 {
+  margin: 8px 0 4px;
+  color: var(--text-h);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.nearbyResourceCard p {
+  margin: 0;
+  color: var(--text);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.nearbyResourceCard a {
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resourceTypeChip {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
+  padding: 4px 9px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nearbyResourceMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.nearbyResourceMeta span {
+  border-radius: 999px;
+  background: var(--code-bg);
+  color: var(--text);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .resourceLinkList {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -487,6 +575,7 @@
 @media (max-width: 980px) {
   .resourcesIntroGrid,
   .resourceLinkList,
+  .nearbyResourceGrid,
   .videoGrid {
     grid-template-columns: 1fr;
   }

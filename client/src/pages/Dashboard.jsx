@@ -118,7 +118,7 @@ export default function Dashboard() {
             <h2>Live California map</h2>
             <Link className="panelLink" to="/map">Open full map</Link>
           </div>
-          <WildfireMap compact title="" />
+          <WildfireMap compact variant="dashboard" title="" showCompactResults={false} />
         </article>
 
         <aside className="dashboardSideStack">

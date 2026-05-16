@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { Play, ExternalLink, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Play, ExternalLink, X, MapPin } from "lucide-react";
+import { apiBase } from "../api.js";
 import "./EvacuationResources.css";
 
 const emergencyContacts = [
@@ -62,6 +63,51 @@ const wildfireVideos = [
 export default function EvacuationResources() {
   const [query, setQuery] = useState("");
   const [activeVideo, setActiveVideo] = useState(null);
+  const [nearbyResources, setNearbyResources] = useState([]);
+  const [resourceStatus, setResourceStatus] = useState("Loading nearby evacuation resources...");
+  const [origin, setOrigin] = useState({ latitude: 33.6846, longitude: -117.8265, label: "Irvine, CA" });
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setOrigin({ latitude: coords.latitude, longitude: coords.longitude, label: "your location" });
+      },
+      () => {},
+      { timeout: 7000 },
+    );
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadResources() {
+      setResourceStatus(`Loading resources near ${origin.label}...`);
+      try {
+        const params = new URLSearchParams({
+          latitude: String(origin.latitude),
+          longitude: String(origin.longitude),
+          radius: "75",
+        });
+        const res = await fetch(`${apiBase}/api/evacuation-resources/nearby?${params.toString()}`);
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body?.message || "Could not load evacuation resources.");
+        if (!cancelled) {
+          const data = Array.isArray(body?.data) ? body.data : [];
+          setNearbyResources(data);
+          setResourceStatus(data.length ? `Showing resources near ${origin.label}.` : "No nearby seeded resources found.");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setNearbyResources([]);
+          setResourceStatus(error.message);
+        }
+      }
+    }
+    loadResources();
+    return () => {
+      cancelled = true;
+    };
+  }, [origin]);
 
   const filteredLinks = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -117,6 +163,45 @@ export default function EvacuationResources() {
             ))}
           </div>
         </article>
+      </section>
+
+      <section className="nearbyResourcesSection">
+        <div className="resourcesToolbar">
+          <div className="resourcesCardHeader">
+            <h2>Nearby evacuation resources</h2>
+            <p>{resourceStatus}</p>
+          </div>
+          <button
+            type="button"
+            className="resourceLocationBtn"
+            onClick={() => {
+              if (!navigator.geolocation) return;
+              navigator.geolocation.getCurrentPosition(({ coords }) => {
+                setOrigin({ latitude: coords.latitude, longitude: coords.longitude, label: "your location" });
+              });
+            }}
+          >
+            <MapPin size={15} strokeWidth={2.4} />
+            Use my location
+          </button>
+        </div>
+        <div className="nearbyResourceGrid">
+          {nearbyResources.slice(0, 6).map((resource) => (
+            <article key={resource.id} className="nearbyResourceCard">
+              <div>
+                <span className="resourceTypeChip">{resource.type.replaceAll("_", " ")}</span>
+                <h3>{resource.name}</h3>
+                <p>{resource.address}{resource.city ? `, ${resource.city}` : ""}</p>
+              </div>
+              <div className="nearbyResourceMeta">
+                {typeof resource.distanceMiles === "number" ? <span>{resource.distanceMiles.toFixed(1)} mi</span> : null}
+                {resource.capacity ? <span>Capacity {resource.capacity}</span> : null}
+                <span>{resource.openNow ? "Open / available" : "Status unknown"}</span>
+              </div>
+              {resource.phone ? <a href={`tel:${resource.phone}`}>{resource.phone}</a> : null}
+            </article>
+          ))}
+        </div>
       </section>
 
       {/* Wildfire preparedness videos — visual media grid. */}

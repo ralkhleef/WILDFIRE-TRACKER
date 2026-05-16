@@ -276,8 +276,44 @@ const getNearbyFires = async ({
   });
 };
 
+const toWildfireRecordData = (body) => ({
+  name: body.name,
+  location: body.location,
+  latitude: Number(body.latitude),
+  longitude: Number(body.longitude),
+  size: typeof body.size === 'undefined' || body.size === null ? null : Number(body.size),
+  containment:
+    typeof body.containment === 'undefined' || body.containment === null
+      ? null
+      : Number(body.containment),
+  source: body.source || 'internal',
+  status: body.status || null,
+  reportedAt: body.reportedAt ? new Date(body.reportedAt) : null,
+});
+
+const createWildfireRecord = async (body) =>
+  prisma.wildfireRecord.create({
+    data: toWildfireRecordData(body),
+  });
+
+const updateWildfireRecord = async (fireId, body) => {
+  await prisma.wildfireRecord.findUniqueOrThrow({ where: { id: fireId } });
+  return prisma.wildfireRecord.update({
+    where: { id: fireId },
+    data: toWildfireRecordData(body),
+  });
+};
+
+const deleteWildfireRecord = async (fireId) => {
+  await prisma.wildfireRecord.findUniqueOrThrow({ where: { id: fireId } });
+  return prisma.wildfireRecord.delete({ where: { id: fireId } });
+};
+
 module.exports = {
   listFires,
   getFireById,
   getNearbyFires,
+  createWildfireRecord,
+  updateWildfireRecord,
+  deleteWildfireRecord,
 };
