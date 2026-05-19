@@ -54,6 +54,22 @@
   box-shadow: var(--shadow-fire);
 }
 
+.alertsHeroLogo {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  background: transparent;
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .alertsHeroLogo {
+    width: 64px;
+    height: 64px;
+  }
+}
+
 .alertsTitle {
   margin: 0;
   color: var(--text-h);

@@ -12,6 +12,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { apiBase, authHeaders, getToken } from "../api.js";
+import calfireLogo from "../assets/calfirelogo.png";
 import "./Alerts.css";
 
 const DEFAULT_LAT = 34.0522;
@@ -285,9 +286,13 @@ export default function AlertsPage() {
       <main className="alertsMain">
         <section className="alertsHeroCard">
           <div className="alertsHeroText">
-            <span className="alertsHeroIcon" aria-hidden="true">
-              <ShieldAlert size={20} strokeWidth={2.2} />
-            </span>
+            <img
+              src={calfireLogo}
+              alt="CAL FIRE"
+              className="alertsHeroLogo"
+              width={72}
+              height={72}
+            />
             <div>
               <h1 className="alertsTitle">CAL FIRE Alerts</h1>
               <p>Official wildfire incidents and fire activity from CAL FIRE.</p>

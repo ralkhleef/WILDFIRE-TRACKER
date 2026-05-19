@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiBase, authHeaders, getToken } from "../api.js";
 import "./Settings.css";
@@ -7,7 +7,6 @@ export default function Settings() {
   const [notificationsOn, setNotificationsOn] = useState(true);
   const [pushEnabled, setPushEnabled] = useState(true);
   const [emailEnabled, setEmailEnabled] = useState(false);
-  const [previewMode, setPreviewMode] = useState("email");
   const [alertRadius, setAlertRadius] = useState(25);
   const [severityFilters, setSeverityFilters] = useState({
     critical: true,
@@ -185,30 +184,6 @@ export default function Settings() {
     setSeverityFilters((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
-  const preview = useMemo(() => {
-    const savedLocation = savedLocations[0];
-    const location = savedLocation?.label || "Irvine, CA";
-    const email = currentUser?.email || "you@example.com";
-    const fireName = "Santiago Canyon Fire";
-    const distance = savedLocation ? `${Math.max(5, Math.min(alertRadius, 18))} miles away` : "12 miles away";
-    const containment = "Containment: 28%";
-    const status = "Status: Active";
-    const subject = `Wildfire Alert Near ${location}`;
-    const safety = "Stay alert, review local evacuation guidance, and keep your emergency plan ready.";
-
-    return {
-      email,
-      location,
-      fireName,
-      distance,
-      containment,
-      status,
-      subject,
-      safety,
-      sms: `Wildfire Tracker: ${fireName} near ${location}, ${distance}. ${status}. ${safety}`,
-    };
-  }, [alertRadius, currentUser?.email, savedLocations]);
-
   return (
     <div className="settingsShell">
       <main className="settingsMain">
@@ -266,75 +241,6 @@ export default function Settings() {
               </span>
             </label>
           </div>
-        </section>
-
-        <section className="settingsSection settingsPreviewSection">
-          <div className="settingsPreviewHeader">
-            <div>
-              <h2 className="settingsRowTitle">Notification preview</h2>
-              <p className="settingsRowSub">See what alert messages will look like before they are sent</p>
-            </div>
-            <div className="settingsPreviewTabs" role="tablist" aria-label="Notification preview type">
-              <button
-                type="button"
-                className={previewMode === "email" ? "isActive" : ""}
-                onClick={() => setPreviewMode("email")}
-                role="tab"
-                aria-selected={previewMode === "email"}
-              >
-                Email
-              </button>
-              <button
-                type="button"
-                className={previewMode === "text" ? "isActive" : ""}
-                onClick={() => setPreviewMode("text")}
-                role="tab"
-                aria-selected={previewMode === "text"}
-              >
-                Text Message
-              </button>
-            </div>
-          </div>
-
-          {previewMode === "email" ? (
-            <div className="settingsEmailPreview" role="tabpanel">
-              <div className="emailPreviewChrome">
-                <span />
-                <span />
-                <span />
-              </div>
-              <div className="emailPreviewMeta">
-                <p><strong>From:</strong> Wildfire Tracker</p>
-                <p><strong>To:</strong> {preview.email}</p>
-                <p><strong>Subject:</strong> {preview.subject}</p>
-              </div>
-              <div className="emailPreviewBody">
-                <div className="emailPreviewBadge">Wildfire Alert</div>
-                <h3>{preview.fireName}</h3>
-                <p className="emailPreviewLocation">{preview.location} • {preview.distance}</p>
-                <div className="emailPreviewFacts">
-                  <span>{preview.status}</span>
-                  <span>{preview.containment}</span>
-                </div>
-                <p>{preview.safety}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="settingsSmsPreview" role="tabpanel">
-              <div className="smsPhoneShell">
-                <div className="smsPhoneBar" />
-                <div className="smsHeader">
-                  <span className="smsAvatar">WT</span>
-                  <div>
-                    <strong>Wildfire Tracker</strong>
-                    <small>SMS preview only</small>
-                  </div>
-                </div>
-                <div className="smsBubble">{preview.sms}</div>
-                <p className="smsNote">SMS preview only. This app does not send text messages yet.</p>
-              </div>
-            </div>
-          )}
         </section>
 
         {/* Alert radius */}
