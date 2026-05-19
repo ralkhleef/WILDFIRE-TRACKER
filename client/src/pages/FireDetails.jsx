@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { Copy, ExternalLink, MapPin, Share2 } from "lucide-react";
+import calFireLogo from "../assets/calfirelogo.png";
 import "./FireDetails.css";
 
 const apiBase =
@@ -12,28 +14,10 @@ function formatNumber(value) {
   return value.toLocaleString();
 }
 
-function getAirQualityLabel(fire) {
-  if (fire?.brightness) {
-    return `Elevated (${formatNumber(Number(fire.brightness))})`;
-  }
-  if (fire?.status === "active") return "Watch area";
-  return "Unavailable";
-}
-
 function isNasaHotspot(fire) {
   return (
     fire?.sourceType === "thermal_detection" ||
     String(fire?.source || "").toLowerCase().includes("nasa")
-  );
-}
-
-function isDemoFire(fire) {
-  return (
-    fire?.demo === true ||
-    fire?.sourceType === "demo_fire" ||
-    fire?.sourceType === "demo_fallback" ||
-    fire?.sourceLabel === "Demo Data" ||
-    String(fire?.source || "").toLowerCase().includes("seed")
   );
 }
 
@@ -46,13 +30,6 @@ function formatDateTime(value) {
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return "N/A";
   return date.toLocaleString();
-}
-
-function getSeverityLabel(fire) {
-  if (isNasaHotspot(fire)) return "Watch";
-  if (!fire?.containment || fire.containment < 20) return "Critical";
-  if (fire.containment < 60) return "Warning";
-  return "Watch";
 }
 
 function fireMarkerIcon(googleMaps, fire) {
@@ -129,32 +106,6 @@ function FireMiniMap({ fire }) {
       />
     </GoogleMap>
   );
-}
-
-function getSatelliteUrl(fire) {
-  if (
-    typeof fire?.latitude !== "number" ||
-    typeof fire?.longitude !== "number" ||
-    !Number.isFinite(fire.latitude) ||
-    !Number.isFinite(fire.longitude)
-  ) {
-    return null;
-  }
-
-  const lat = fire.latitude.toFixed(4);
-  const lon = fire.longitude.toFixed(4);
-  return `https://worldview.earthdata.nasa.gov/?v=${lon - 6},${lat - 4},${lon + 6},${lat + 4}`;
-}
-
-function getGoogleMapsSearchUrl(fire, query) {
-  const latitude = Number(fire?.latitude);
-  const longitude = Number(fire?.longitude);
-  const encodedQuery = encodeURIComponent(query);
-  if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-    return `https://www.google.com/maps/search/${encodedQuery}/@${latitude},${longitude},11z`;
-  }
-  const location = encodeURIComponent(fire?.location || "California");
-  return `https://www.google.com/maps/search/${encodedQuery}+near+${location}`;
 }
 
 function getShareMessage(fire) {
@@ -263,7 +214,6 @@ export default function FireDetails() {
     };
   }, [id]);
 
-  const satelliteUrl = useMemo(() => getSatelliteUrl(fire), [fire]);
   const share = useMemo(() => buildShareLinks(fire), [fire]);
 
   async function handleCopyShare() {
@@ -294,19 +244,37 @@ export default function FireDetails() {
     );
   }
 
+  const coordinates =
+    Number.isFinite(Number(fire.latitude)) && Number.isFinite(Number(fire.longitude))
+      ? `${Number(fire.latitude).toFixed(4)}, ${Number(fire.longitude).toFixed(4)}`
+      : "N/A";
+  const sourceValue = fire.sourceLabel || fire.source || "Unknown";
+  const statusValue = fire.status || "Unknown";
+  const summaryFields = [
+    ["Location", fire.location || "Unknown"],
+    ["Coordinates", coordinates],
+    ["Reported time", formatDateTime(fire.reportedAt)],
+    ["Acreage", typeof fire.size === "number" ? `${formatNumber(fire.size)} acres` : "N/A"],
+    ["Containment", typeof fire.containment === "number" ? `${formatNumber(fire.containment)}%` : "N/A"],
+    ["Status", statusValue],
+    ["Source", sourceValue],
+  ];
+
   return (
     <main className="fireDetailsPage">
       <section className="fireMainPanel">
         <header className="fireDetailsHeader">
-          <div>
-            <h1 className="fireDetailsTitle">{getFireTitle(fire)}</h1>
-            <p className="fireDetailsSubhead">{fire.location || "Unknown location"}</p>
-            <div className="fireBadgeRow">
-              <span className="fireSourceBadge">{fire.sourceLabel || fire.source || "Unknown source"}</span>
-              <span className={`fireSeverityBadge fireSeverityBadge--${getSeverityLabel(fire).toLowerCase()}`}>
-                {getSeverityLabel(fire)}
-              </span>
-              {fire.status ? <span className="fireStatusBadge">{fire.status}</span> : null}
+          <div className="fireHeroIdentity">
+            <div className="calFireLogoBadge">
+              <img className="calFireLogo" src={calFireLogo} alt="CAL FIRE" />
+            </div>
+            <div className="fireHeroCopy">
+              <div className="fireBadgeRow">
+                <span className="fireSourceBadge">{sourceValue}</span>
+                <span className="fireStatusBadge">{statusValue}</span>
+              </div>
+              <h1 className="fireDetailsTitle">{getFireTitle(fire)}</h1>
+              <p className="fireDetailsSubhead">{fire.location || "Unknown location"}</p>
             </div>
           </div>
           <Link className="backToMapBtn" to="/map">
@@ -314,219 +282,73 @@ export default function FireDetails() {
           </Link>
         </header>
 
-        {isNasaHotspot(fire) ? (
-          <p className="fireSourceNote">
-            Satellite thermal detection. Not a confirmed wildfire incident unless matched with an official incident source.
-          </p>
-        ) : null}
-
-        <section className="fireInfoGrid" aria-label="Fire summary">
-          {[
-            ["Location", fire.location || "Unknown"],
-            [
-              "Coordinates",
-              Number.isFinite(Number(fire.latitude)) && Number.isFinite(Number(fire.longitude))
-                ? `${Number(fire.latitude).toFixed(4)}, ${Number(fire.longitude).toFixed(4)}`
-                : "N/A",
-            ],
-            [isNasaHotspot(fire) ? "Detected" : "Reported", formatDateTime(fire.reportedAt)],
-            ["Source", fire.sourceLabel || fire.source || "Unknown"],
-            ["Acreage", typeof fire.size === "number" ? `${formatNumber(fire.size)} acres` : "N/A"],
-            ["Containment", typeof fire.containment === "number" ? `${formatNumber(fire.containment)}%` : "N/A"],
-            ["Status", fire.status || "Unknown"],
-            ["Air quality", getAirQualityLabel(fire)],
-          ].map(([label, value]) => (
-            <article key={label} className="fireInfoCard">
-              <h3>{label}</h3>
-              <p>{value}</p>
-            </article>
-          ))}
+        <section className="fireSummaryPanel" aria-label="Fire summary">
+          <div className="fireSummaryHeader">
+            <h2>Incident Summary</h2>
+            <span className="fireSummaryAccent" aria-hidden="true" />
+          </div>
+          <dl className="fireSummaryGrid">
+            {summaryFields.map(([label, value]) => (
+              <div key={label} className="fireSummaryItem">
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
-        <section className="fireContentCard">
-          <h2>Share</h2>
-          <p className="fireMetaLine">{share.message}</p>
-          <div className="resourceGrid">
-            <a className="resourcePill" href={share.facebook} target="_blank" rel="noreferrer">
-              Share on Facebook
+        <section className="fireSharePanel" aria-label="Share fire details">
+          <div className="fireShareCopy">
+            <Share2 size={16} strokeWidth={2.2} />
+            <p>Share this CAL FIRE incident update.</p>
+          </div>
+          <div className="fireShareActions">
+            <a className="fireShareButton" href={share.facebook} target="_blank" rel="noreferrer">
+              <ExternalLink size={14} strokeWidth={2.2} />
+              Facebook
             </a>
-            <a className="resourcePill" href={share.x} target="_blank" rel="noreferrer">
-              Share on X
+            <a className="fireShareButton" href={share.x} target="_blank" rel="noreferrer">
+              <ExternalLink size={14} strokeWidth={2.2} />
+              X
             </a>
-            <button type="button" className="resourcePill resourcePillButton" onClick={handleCopyShare}>
-              Copy TikTok / Instagram template
+            <button type="button" className="fireShareButton" onClick={handleCopyShare}>
+              <Copy size={14} strokeWidth={2.2} />
+              Copy
             </button>
           </div>
         </section>
 
-        <section className="fireContentCard">
-          <h2>Reports</h2>
-          {isDemoFire(fire) ? (
-            <div className="fireReportGrid">
-              <article className="fireReportCard">
-                <h4>Demo field report</h4>
-                <p>Demo data — 4 engines, 1 helicopter, and 1 hand crew assigned for layout testing.</p>
-              </article>
-              <article className="fireReportCard">
-                <h4>Location accuracy</h4>
-                <p>Approximate — verify with an official incident source during real use.</p>
-              </article>
-              <article className="fireReportCard">
-                <h4>Last updated</h4>
-                <p>{formatDateTime(fire.updatedAt || fire.reportedAt)}</p>
-              </article>
-            </div>
-          ) : (
-            <p className="fireStatusText">
-              No field reports available yet. Check official resources below for the latest updates.
-            </p>
-          )}
-        </section>
-
-        <section className="fireContentCard">
-          <h2>Imagery / Camera View</h2>
-          {isDemoFire(fire) ? (
-            <>
-              <p className="fireMetaLine">
-                Demo camera placeholder for layout testing. Use official sources for real incident imagery.
-              </p>
-              <div className="fireImageryLinks">
-                {satelliteUrl ? (
-                  <a className="externalLinkBtn" href={satelliteUrl} target="_blank" rel="noreferrer">
-                    NASA Worldview (satellite)
-                  </a>
-                ) : null}
-                <a
-                  className="externalLinkBtn"
-                  href="https://cameras.alertcalifornia.org/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  ALERTCalifornia cameras
-                </a>
-              </div>
-            </>
-          ) : (
-            <p className="fireStatusText">No camera imagery is available for this incident yet.</p>
-          )}
-        </section>
-
-        <section className="fireContentCard">
-          <h2>Map</h2>
+        <section className="fireMapPanel">
+          <div className="fireMapHeader">
+            <h2>Map</h2>
+            <span>
+              <MapPin size={14} strokeWidth={2.2} />
+              {coordinates}
+            </span>
+          </div>
           {Number.isFinite(Number(fire.latitude)) && Number.isFinite(Number(fire.longitude)) ? (
-            <>
-              <div className="fireMapPreview">
-                <FireMiniMap fire={fire} />
-              </div>
-              <p className="fireMetaLine">
-                Coordinates: {Number(fire.latitude).toFixed(4)}, {Number(fire.longitude).toFixed(4)}
-              </p>
-              <p className="fireMetaLine">
-                {isNasaHotspot(fire) ? "Detected" : "Reported"}: {formatDateTime(fire.reportedAt)}
-              </p>
-            </>
+            <div className="fireMapPreview">
+              <FireMiniMap fire={fire} />
+            </div>
           ) : (
             <p className="fireStatusText">Map view unavailable for this record.</p>
           )}
         </section>
 
-        <section className="fireContentCard">
-          <h2>Action Resources</h2>
-          <p className="fireMetaLine">
-            Use official sources for evacuation, air quality, and incident updates near this fire.
-          </p>
-          <div className="resourceGrid">
-            <a
-              className="resourcePill"
-              href="https://www.fire.ca.gov/incidents"
-              target="_blank"
-              rel="noreferrer"
-            >
-              CAL FIRE incident dashboard
-            </a>
-            <a
-              className="resourcePill"
-              href="https://www.ready.gov/evacuation"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Ready.gov evacuation guide
-            </a>
-            <a
-              className="resourcePill"
-              href="https://www.airnow.gov/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              AirNow local air quality
-            </a>
-            <a
-              className="resourcePill"
-              href={getGoogleMapsSearchUrl(fire, "evacuation shelter")}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Google Maps evacuation / shelter resources
-            </a>
-            <a
-              className="resourcePill"
-              href="https://cameras.alertcalifornia.org/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              ALERTCalifornia camera network
-            </a>
-          </div>
-        </section>
-
-        <section className="fireContentCard">
-          <h2>Nearby Resources</h2>
-          <p className="fireMetaLine">
-            These links open Google Maps searches centered near the incident when coordinates are available.
-          </p>
-          <div className="resourceGrid">
-            <a
-              className="resourcePill"
-              href={getGoogleMapsSearchUrl(fire, "hospitals")}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Nearby hospitals
-            </a>
-            <a
-              className="resourcePill"
-              href={getGoogleMapsSearchUrl(fire, "emergency shelters")}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Nearby shelters
-            </a>
-            <a
-              className="resourcePill"
-              href={getGoogleMapsSearchUrl(fire, "evacuation centers")}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Evacuation centers
-            </a>
-          </div>
-        </section>
-
-        <section className="fireContentCard">
-          <h3>Nearby official fires (60 mi)</h3>
-          {nearby.length ? (
+        {nearby.length ? (
+          <section className="nearbyFiresPanel">
+            <h2>Nearby Official Fires</h2>
             <ul className="nearbyFireList">
               {nearby.map((item) => (
                 <li key={item.id}>
                   <Link to={`/fire/${encodeURIComponent(item.id)}`}>{getFireTitle(item)}</Link>
                   <span>{item.location || "Unknown location"}</span>
+                  <ExternalLink size={13} strokeWidth={2.2} aria-hidden="true" />
                 </li>
               ))}
             </ul>
-          ) : (
-            <p className="fireStatusText">No additional nearby fires found.</p>
-          )}
-        </section>
+          </section>
+        ) : null}
       </section>
     </main>
   );

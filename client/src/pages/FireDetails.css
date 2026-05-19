@@ -1,233 +1,301 @@
 .fireDetailsPage {
   flex: 1;
-  display: block;
   min-height: 0;
   width: 100%;
+  overflow-y: auto;
   box-sizing: border-box;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 244, 0.6) 0%, rgba(255, 255, 255, 0.4) 42%, rgba(255, 255, 255, 0) 78%),
+    var(--page-bg, #f8fafc);
 }
 
 .fireMainPanel {
-  padding: 22px 24px 24px;
-  width: min(100%, 1180px);
+  width: min(100%, 1160px);
   margin: 0 auto;
+  padding: 26px 30px 40px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
-/* Strong header — divider underneath rather than a card. */
 .fireDetailsHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--divider);
+  gap: 18px;
+  padding: 4px 0 14px;
+  border-bottom: 1px solid rgba(120, 53, 15, 0.1);
+}
+
+.fireHeroIdentity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.fireHeroCopy {
+  min-width: 0;
+}
+
+.calFireLogoBadge {
+  flex: 0 0 auto;
+  width: 84px;
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(120, 53, 15, 0.1);
+  padding: 8px;
+  box-sizing: border-box;
+  box-shadow: 0 14px 28px -26px rgba(15, 23, 42, 0.38);
+}
+
+.calFireLogo {
+  width: 68px;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .fireDetailsTitle {
   margin: 0;
-  font-size: 24px;
-  line-height: 1.15;
-  font-weight: 600;
   color: var(--text-h);
-  letter-spacing: -0.01em;
+  font-size: 30px;
+  line-height: 1.12;
+  font-weight: 780;
+  letter-spacing: 0;
 }
 
 .fireDetailsSubhead {
-  margin: 4px 0 10px;
-  color: var(--text-muted);
-  font-size: 13px;
+  margin: 7px 0 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .fireBadgeRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
 .fireSourceBadge,
-.fireSeverityBadge,
 .fireStatusBadge {
+  min-height: 24px;
   display: inline-flex;
   align-items: center;
-  height: 22px;
-  padding: 0 10px;
   border-radius: 999px;
-  font-size: 10.5px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  background: var(--code-bg);
+  padding: 0 10px;
+  border: 1px solid rgba(120, 53, 15, 0.12);
+  background: rgba(255, 255, 255, 0.82);
   color: var(--text);
-  border: none;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 780;
+  letter-spacing: 0;
 }
 
-.fireSeverityBadge--critical { background: var(--accent); color: #fff; }
-.fireSeverityBadge--warning  { background: var(--orange); color: #fff; }
-.fireSeverityBadge--watch    { background: var(--warning); color: #1f2937; }
+.fireStatusBadge {
+  border-color: rgba(220, 38, 38, 0.16);
+  background: rgba(254, 242, 242, 0.82);
+  color: #991b1b;
+}
 
 .backToMapBtn {
-  text-decoration: none;
-  border: 1px solid var(--border);
+  flex: 0 0 auto;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(120, 53, 15, 0.13);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
   color: var(--text-h);
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 12.5px;
-  background: var(--bg);
-  transition: background 0.15s, border-color 0.15s;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 760;
+  text-decoration: none;
+  padding: 0 14px;
+  box-shadow: 0 12px 26px -25px rgba(15, 23, 42, 0.42);
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
 .backToMapBtn:hover {
-  background: var(--code-bg);
-  border-color: var(--accent);
-  color: var(--accent-strong);
+  transform: translateY(-1px);
+  border-color: rgba(220, 38, 38, 0.18);
+  background: rgba(255, 247, 237, 0.78);
+  color: var(--accent);
 }
 
-/* Summary stat cards. */
-.fireInfoGrid {
+.fireMapPanel,
+.nearbyFiresPanel {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.fireSummaryPanel {
+  padding: 2px 0 0;
+}
+
+.fireSummaryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.fireSummaryHeader h2,
+.fireMapHeader h2,
+.nearbyFiresPanel h2 {
+  margin: 0;
+  color: var(--text-h);
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 780;
+  letter-spacing: 0;
+}
+
+.fireSummaryAccent {
+  width: 42px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.fireSummaryGrid {
+  margin: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  column-gap: 30px;
 }
 
-.fireInfoCard {
-  background: var(--bg);
-  padding: 16px;
+.fireSummaryItem {
+  min-width: 0;
+  padding: 11px 0 12px;
+  border-bottom: 1px solid rgba(120, 53, 15, 0.1);
   box-sizing: border-box;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  min-height: 76px;
-  box-shadow: var(--shadow-sm);
 }
 
-.fireInfoCard h3 {
-  margin: 0 0 7px;
+.fireSummaryItem dt {
+  margin: 0 0 6px;
   color: var(--text-muted);
-  font-size: 10.5px;
-  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 780;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
-.fireInfoCard p {
+.fireSummaryItem dd {
   margin: 0;
   color: var(--text-h);
   font-size: 13.5px;
-  font-weight: 600;
   line-height: 1.35;
+  font-weight: 660;
+  overflow-wrap: anywhere;
 }
 
-.fireLargeCard,
-.fireRightStack,
-.nearbyFiresSection,
-.fireContentCard {
-  border-radius: 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  padding: 16px;
-  box-sizing: border-box;
-}
-
-.fireLargeCard h3,
-.fireRightStack h3,
-.nearbyFiresSection h3,
-.fireContentCard h2,
-.fireContentCard h3 {
-  margin: 0 0 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-h);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.fireMetaLine {
-  margin: 0 0 8px;
-  font-size: 12.5px;
-  color: var(--text-muted);
-}
-
-.fireSourceNote {
-  margin: 0;
-  border-left: 3px solid var(--orange);
-  border-radius: 0 8px 8px 0;
-  background: var(--orange-bg);
-  color: #7c2d12;
-  padding: 12px 16px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.fireReportGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.fireReportCard {
-  border: 1px solid var(--divider);
-  border-radius: 8px;
-  padding: 12px;
-  background: var(--code-bg);
-}
-
-.fireReportCard h4 {
-  margin: 0 0 6px;
-  color: var(--text-h);
-  font-size: 12px;
-}
-
-.fireReportCard p {
-  margin: 0;
-  color: var(--text);
-  font-size: 12.5px;
-  line-height: 1.45;
-}
-
-.fireImageryLinks {
+.fireSharePanel {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid rgba(120, 53, 15, 0.1);
+  border-bottom: 1px solid rgba(120, 53, 15, 0.1);
+  padding: 9px 0;
+}
+
+.fireShareCopy {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+}
+
+.fireShareCopy svg {
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.fireShareCopy p {
+  margin: 0;
+  max-width: 690px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.fireShareActions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
-  gap: 8px;
 }
 
-.resourceGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.externalLinkBtn {
+.fireShareButton {
+  min-height: 29px;
   display: inline-flex;
   align-items: center;
-  text-decoration: none;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  padding: 8px 12px;
+  gap: 6px;
+  border: 1px solid rgba(120, 53, 15, 0.12);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.78);
   color: var(--text-h);
-  background: var(--bg);
-  font-weight: 600;
-  font-size: 12.5px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 760;
+  text-decoration: none;
+  padding: 0 9px;
+  cursor: pointer;
 }
 
-.externalLinkBtn:hover {
-  background: var(--code-bg);
-  border-color: var(--accent);
-  color: var(--accent-strong);
+.fireShareButton:hover {
+  border-color: rgba(220, 38, 38, 0.18);
+  color: var(--accent);
+  background: rgba(255, 247, 237, 0.82);
+}
+
+.fireMapPanel {
+  overflow: hidden;
+  border: 1px solid rgba(120, 53, 15, 0.09);
+  border-radius: 10px;
+  box-shadow: 0 14px 32px -30px rgba(15, 23, 42, 0.46);
+}
+
+.fireMapHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(120, 53, 15, 0.08);
+}
+
+.fireMapHeader span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.fireMapHeader svg {
+  color: var(--accent);
 }
 
 .fireMapPreview {
   width: 100%;
-  height: clamp(280px, 40vh, 380px);
-  margin: 0 0 10px;
-  border-radius: 8px;
+  height: clamp(310px, 44vh, 440px);
   overflow: hidden;
   background: var(--code-bg);
 }
@@ -237,36 +305,47 @@
   height: 100%;
 }
 
-.fireRightStack {
+.mapMissingKey,
+.mapLoading {
+  min-height: 280px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.resourcePill {
-  display: flex;
   align-items: center;
-  text-decoration: none;
-  border-radius: 6px;
-  background: var(--code-bg);
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  color: var(--text);
+  text-align: center;
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.68), rgba(248, 250, 252, 0.88));
+}
+
+.mapMissingKey h3 {
+  margin: 0;
   color: var(--text-h);
-  padding: 10px 10px;
-  font-size: 12.5px;
-  font-weight: 500;
-  border: 1px solid var(--divider);
-  transition: background 0.12s, color 0.12s;
+  font-size: 15px;
 }
 
-.resourcePillButton {
-  font: inherit;
-  border: 1px solid var(--divider);
-  cursor: pointer;
-  text-align: left;
+.mapMissingKey p,
+.mapLoading {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
-.resourcePill:hover {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
+.mapMissingKey code {
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 1px 5px;
+}
+
+.nearbyFiresPanel {
+  padding: 2px 0 0;
+  border-top: 1px solid rgba(120, 53, 15, 0.1);
+  background: transparent;
+}
+
+.nearbyFiresPanel h2 {
+  margin-bottom: 8px;
 }
 
 .nearbyFireList {
@@ -276,64 +355,133 @@
 }
 
 .nearbyFireList li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: space-between;
-  padding: 9px 2px;
-  border-bottom: 1px solid var(--divider);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, auto) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(120, 53, 15, 0.08);
 }
 
-.nearbyFireList li:last-child { border-bottom: none; }
+.nearbyFireList li:last-child {
+  border-bottom: 0;
+}
 
 .nearbyFireList a {
+  min-width: 0;
   color: var(--accent);
-  text-decoration: none;
-  font-weight: 600;
   font-size: 13px;
+  line-height: 1.3;
+  font-weight: 760;
+  text-decoration: none;
 }
 
-.nearbyFireList a:hover { color: var(--accent-strong); }
+.nearbyFireList a:hover {
+  color: var(--accent-strong);
+}
 
 .nearbyFireList span {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 12.5px;
+  line-height: 1.35;
 }
 
-.fireStatusText {
-  margin: 0;
+.nearbyFireList svg {
   color: var(--text-muted);
+}
+
+.fireStatusText,
+.fireErrorText {
+  margin: 0;
+  border: 1px solid rgba(120, 53, 15, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--text-muted);
+  padding: 14px 16px;
   font-size: 13px;
+  line-height: 1.45;
 }
 
 .fireErrorText {
-  margin: 0;
   color: var(--accent-strong);
-  font-size: 13px;
 }
 
-@media (max-width: 1100px) {
-  .fireInfoGrid {
+.backToMapBtn:focus-visible,
+.fireShareButton:focus-visible,
+.nearbyFireList a:focus-visible {
+  outline: 3px solid rgba(249, 115, 22, 0.34);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1000px) {
+  .fireSummaryGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .resourceGrid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 700px) {
   .fireMainPanel {
-    padding: 16px;
+    padding: 18px;
+    gap: 14px;
   }
 
-  .fireInfoGrid {
+  .fireDetailsHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fireHeroIdentity {
+    align-items: flex-start;
+  }
+
+  .calFireLogoBadge {
+    width: 76px;
+    min-height: 88px;
+  }
+
+  .calFireLogo {
+    width: 62px;
+  }
+
+  .fireDetailsTitle {
+    font-size: 25px;
+  }
+
+  .backToMapBtn {
+    width: 100%;
+  }
+
+  .fireSummaryPanel {
+    padding: 0;
+  }
+
+  .fireSummaryGrid {
     grid-template-columns: 1fr;
   }
 
-  .fireInfoCard {
-    border: 1px solid var(--border);
+  .fireSharePanel {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-  .fireReportGrid {
-    grid-template-columns: 1fr;
+  .fireShareActions {
+    width: 100%;
+  }
+
+  .fireMapHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .fireMapPreview {
+    height: 300px;
+  }
+
+  .nearbyFireList li {
+    grid-template-columns: 1fr auto;
+  }
+
+  .nearbyFireList span {
+    grid-column: 1 / -1;
   }
 }

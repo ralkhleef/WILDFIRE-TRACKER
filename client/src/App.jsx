@@ -54,6 +54,7 @@ function AppLayout() {
     location.pathname === "/signup" ||
     location.pathname === "/register";
   const isMapPage = location.pathname === "/map";
+  const isAlertsPage = location.pathname === "/alerts";
   const handleSidebarNavigate = () => {
     if (window.innerWidth <= 760) {
       setSidebarOpen(false);
@@ -189,7 +190,7 @@ function AppLayout() {
           </Routes>
         </div>
       </div>
-      {!isMapPage ? <Footer /> : null}
+      {!isMapPage && !isAlertsPage ? <Footer /> : null}
     </div>
   );
 }

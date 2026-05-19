@@ -20,7 +20,7 @@ Port `5050` is now an API Gateway. It accepts browser requests, handles CORS/log
 
 ## Database
 
-All services use the existing PostgreSQL database through Prisma. This keeps the assignment simple while still making each service independently runnable. In a larger production system, each service would usually own its own database or schema.
+All services use the existing PostgreSQL database through Prisma.
 
 ## Service Communication
 
@@ -51,7 +51,7 @@ npm run dev:alerts
 npm run dev:evacuation
 ```
 
-## Health Checks
+## Checks
 
 ```bash
 curl http://localhost:5050/api/health
@@ -60,14 +60,3 @@ curl http://localhost:5052/api/health
 curl http://localhost:5053/api/health
 curl http://localhost:5054/api/health
 ```
-
-## Demo Explanation
-
-In the demo, explain that the app now has real service boundaries:
-
-1. React talks only to the API Gateway.
-2. The gateway routes by URL prefix.
-3. Each domain service can start, stop, and health check independently.
-4. JWT auth works across services because they share `JWT_SECRET`.
-5. The services share PostgreSQL/Prisma for a simple course-project deployment.
-6. Alert service calls Fire service over HTTP to generate local alerts.

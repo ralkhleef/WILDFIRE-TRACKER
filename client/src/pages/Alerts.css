@@ -8,7 +8,10 @@
 
 .alertsMain {
   flex: 1;
-  padding: 22px 24px 24px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 24px 30px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -16,30 +19,64 @@
   overflow-y: auto;
 }
 
-.alertsHeader {
+.alertsHeroCard {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 18px;
   flex-wrap: wrap;
+  padding: 18px 20px;
+  border: 1px solid rgba(220, 38, 38, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 247, 237, 0.92) 100%),
+    var(--bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.alertsHeroText {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.alertsHeroIcon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-fire);
+  color: #fff;
+  box-shadow: var(--shadow-fire);
 }
 
 .alertsTitle {
   margin: 0;
+  color: var(--text-h);
   font-size: 24px;
   line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--text-h);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.alertsHeroText p {
+  margin: 4px 0 0;
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.45;
 }
 
 .alertsNotifToggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  font-weight: 500;
   color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   user-select: none;
 }
@@ -54,19 +91,19 @@
 .alertsToggleTrack {
   position: relative;
   display: inline-block;
-  width: 36px;
-  height: 20px;
-  background: var(--border);
+  width: 38px;
+  height: 21px;
   border-radius: 999px;
-  transition: background 0.2s;
+  background: var(--border);
+  transition: background 0.18s ease;
 }
 
 .alertsNotifToggle input:checked + .alertsToggleTrack {
-  background: var(--success);
+  background: var(--accent);
 }
 
 .alertsNotifToggle input:focus-visible + .alertsToggleTrack {
-  outline: 2px solid var(--accent);
+  outline: 3px solid rgba(249, 115, 22, 0.35);
   outline-offset: 2px;
 }
 
@@ -74,53 +111,61 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 16px;
-  height: 16px;
-  background: #fff;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
-  transition: transform 0.2s;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.16);
+  transition: transform 0.18s ease;
 }
 
 .alertsNotifToggle input:checked + .alertsToggleTrack .alertsToggleThumb {
-  transform: translateX(16px);
+  transform: translateX(17px);
 }
 
 .alertsNotifLabel {
+  color: var(--text-muted);
   font-size: 12px;
-  color: var(--text-muted);
 }
 
-/* Filter bar — flat, single row, no card. */
 .alertsFilterBar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 0;
-  border: none;
-  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(150px, 0.8fr) minmax(220px, 1.4fr);
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-sm);
 }
 
-.alertsFilterLabel {
-  font-size: 11px;
+.alertsFilterGroup {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alertsFilterGroup span {
+  color: var(--text-h);
+  font-size: 12px;
+  line-height: 1.2;
   font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
 }
 
 .alertsFilterSelect,
 .alertsFilterInput {
-  font: inherit;
-  font-size: 13px;
+  width: 100%;
   height: 36px;
-  padding: 0 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--bg);
   color: var(--text-h);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  font: inherit;
+  font-size: 13px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .alertsFilterSelect:focus,
@@ -130,75 +175,66 @@
   box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
-.alertsFilterInput {
-  flex: 1;
-  min-width: 140px;
+.alertsHint,
+.alertsError,
+.alertsEmpty {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 .alertsHint {
-  margin: 0;
-  font-size: 12px;
   color: var(--text-muted);
 }
 
 .alertsError {
-  margin: 0;
-  font-size: 13px;
   color: var(--accent-strong);
 }
 
-/* One material panel; rows inside use dividers. */
+.alertsEmpty {
+  padding: 16px;
+  border: 1px solid rgba(249, 115, 22, 0.15);
+  border-radius: 8px;
+  background: var(--orange-bg);
+  color: var(--text);
+}
+
 .alertsList {
   display: flex;
   flex-direction: column;
-  background: var(--bg);
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
+  gap: 10px;
 }
 
 .alertCard {
   display: grid;
-  grid-template-columns: 4px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--divider);
-  background: var(--bg);
-  transition: background 0.12s;
-  position: relative;
+  align-items: start;
+  padding: 14px 15px 14px 13px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
-.alertCard:last-child { border-bottom: none; }
-.alertCard:hover { background: var(--code-bg); }
-
-/* Left severity bar — only colored element on the row. */
-.alertCard::before {
-  content: "";
-  display: block;
-  width: 4px;
-  align-self: stretch;
-  border-radius: 2px;
+.alertCard:hover {
+  background: #fff;
+  border-color: rgba(220, 38, 38, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
-.alertCard--critical::before { background: var(--accent); }
-.alertCard--warning::before  { background: var(--orange); }
-.alertCard--watch::before    { background: var(--warning); }
+.alertCard--critical {
+  border-left-color: var(--accent);
+}
 
-/* No more colored card backgrounds. */
-.alertCard--critical,
-.alertCard--warning,
+.alertCard--warning {
+  border-left-color: var(--orange);
+}
+
 .alertCard--watch {
-  border-color: var(--divider);
-  background: var(--bg);
-}
-
-.alertCardTop {
-  display: contents;
-}
-
-.alertCardTop > div:first-child {
-  min-width: 0;
+  border-left-color: var(--warning);
 }
 
 .alertCardLinkBody {
@@ -207,260 +243,303 @@
   text-decoration: none;
 }
 
+.alertCardLinkBody:focus-visible,
+.alertShareBtn:focus-visible,
+.shareAction:focus-visible {
+  outline: 3px solid rgba(249, 115, 22, 0.35);
+  outline-offset: 2px;
+}
+
 .alertCardLinkBody:hover .alertCardName {
   color: var(--accent-strong);
 }
 
+.alertCardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.alertFireIcon {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
+}
+
 .alertCardName {
-  margin: 0 0 1px;
-  font-size: 14px;
-  line-height: 1.25;
-  font-weight: 600;
+  min-width: 0;
+  margin: 0;
   color: var(--text-h);
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.alertCardLocation {
-  margin: 0 0 1px;
-  font-size: 12.5px;
-  color: var(--text);
-}
-
-.alertCardSeverityText {
-  margin: 0;
-  font-size: 11.5px;
-  color: var(--text-muted);
-}
-
-.alertCardRight {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-/* Source chips — material pill shape, color-coded. */
 .alertSourceBadge {
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  background: var(--code-bg);
-  color: var(--text);
-  border: none;
-}
-
-.alertSourceBadge[data-source="cal"]  { background: var(--accent); color: #fff; }
-.alertSourceBadge[data-source="nasa"] { background: var(--orange); color: #fff; }
-.alertSourceBadge[data-source="seed"] { background: var(--code-bg); color: var(--text); }
-
-.alertBadge {
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 999px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.alertBadge--critical { background: var(--accent); color: #fff; }
-.alertBadge--warning  { background: var(--orange); color: #fff; }
-.alertBadge--watch    { background: var(--warning); color: #1f2937; }
-
-.alertCardTime {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.alertShareBtn {
-  height: 26px;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  border: 1px solid var(--accent);
+  height: 22px;
+  padding: 0 8px;
   border-radius: 999px;
   background: var(--accent);
   color: #fff;
-  font: inherit;
-  font-size: 11px;
+  font-size: 10.5px;
+  line-height: 1;
   font-weight: 800;
+  letter-spacing: 0;
+}
+
+.alertCardSummary {
+  margin: 7px 0 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.alertCardMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 9px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.alertCardMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.alertCardActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.alertBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
   padding: 0 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.alertBadge--critical {
+  background: var(--accent);
+  color: #fff;
+}
+
+.alertBadge--warning {
+  background: var(--orange);
+  color: #fff;
+}
+
+.alertBadge--watch {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.alertShareBtn {
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 10px;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 5px 12px -8px rgba(220, 38, 38, 0.8);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .alertShareBtn:hover,
 .alertShareBtn[aria-expanded="true"] {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
-  color: #fff;
-}
-
-.alertSharePanel {
-  grid-column: 2 / 4;
-  border-top: 1px solid var(--accent-soft);
-  padding-top: 11px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.alertShareHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.alertShareHeader span {
-  color: var(--accent-strong);
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.alertShareHeader p {
-  flex: 1;
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1.45;
-  text-align: right;
-}
-
-.alertShareActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.shareAction {
-  width: 62px;
-  min-height: 64px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 6px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--text-h);
-  font: inherit;
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 4px 2px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.shareAction:hover {
+  border-color: var(--accent);
   background: var(--accent-bg);
   color: var(--accent-strong);
 }
 
-.shareActionIcon {
-  width: 38px;
-  height: 38px;
+.alertSharePanel {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--divider);
+}
+
+.alertShareText {
+  flex: 1;
+  min-width: 220px;
+  margin: 0;
+  color: var(--text);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.alertShareActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.shareAction {
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: #fff;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 9px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.shareAction:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
   color: var(--accent-strong);
-  box-shadow: var(--shadow-sm);
 }
-
-.shareActionIcon--letter {
-  font-size: 17px;
-  font-weight: 900;
-  font-family: var(--sans);
-}
-
-.shareAction--copy .shareActionIcon { background: #fef2f2; color: var(--accent-strong); }
-.shareAction--native .shareActionIcon { background: #ecfdf5; color: #047857; }
-.shareAction--x .shareActionIcon { background: #111827; color: #fff; }
-.shareAction--facebook .shareActionIcon { background: #2563eb; color: #fff; }
-.shareAction--instagram .shareActionIcon {
-  background: linear-gradient(135deg, #f97316, #dc2626);
-  color: #fff;
-}
-.shareAction--tiktok .shareActionIcon { background: #020617; color: #fff; }
-.shareAction--email .shareActionIcon { background: #fff7ed; color: var(--orange-strong); }
 
 .alertsSeverityLegend {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
-  padding: 8px 0 0;
-  border-top: 1px solid var(--divider);
-  background: transparent;
-  border-radius: 0;
-  font-size: 12px;
+  padding: 4px 0 0;
   color: var(--text-muted);
+  font-size: 12px;
 }
 
 .alertsLegendTitle {
-  font-weight: 600;
   color: var(--text);
+  font-weight: 700;
 }
 
 .alertsLegendItem {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
 .alertsLegendDot {
   display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
 }
 
-.alertsLegendDot--critical { background: var(--accent); }
-.alertsLegendDot--warning  { background: var(--orange); }
-.alertsLegendDot--watch    { background: var(--warning); }
+.alertsLegendDot--critical {
+  background: var(--accent);
+}
 
-@media (max-width: 760px) {
-  .alertsMain { padding: 16px; }
+.alertsLegendDot--warning {
+  background: var(--orange);
+}
 
-  .alertCard {
-    grid-template-columns: 4px minmax(0, 1fr);
-    align-items: start;
+.alertsLegendDot--watch {
+  background: var(--warning);
+}
+
+@media (max-width: 860px) {
+  .alertsFilterBar {
+    grid-template-columns: 1fr;
   }
 
-  .alertCardRight {
-    grid-column: 2;
+  .alertCard {
+    grid-template-columns: 1fr;
+  }
+
+  .alertCardActions {
     justify-content: flex-start;
   }
 
   .alertSharePanel {
-    grid-column: 2;
-  }
-
-  .alertShareHeader {
+    align-items: flex-start;
     flex-direction: column;
-    gap: 4px;
   }
 
-  .alertShareHeader p {
-    text-align: left;
+  .alertShareText {
+    min-width: 0;
   }
 
-  .shareAction {
-    width: 58px;
+  .alertShareActions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .alertsMain {
+    padding: 18px;
+  }
+
+  .alertsHeroCard {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .alertsHeroText {
+    align-items: flex-start;
+  }
+
+  .alertsTitle {
+    font-size: 22px;
+  }
+
+  .alertsNotifToggle,
+  .alertsFilterGroup,
+  .alertsFilterSelect,
+  .alertsFilterInput {
+    width: 100%;
+  }
+
+  .alertCard {
+    padding: 13px;
+  }
+
+  .alertCardTitleRow {
+    flex-wrap: wrap;
+  }
+
+  .alertCardName {
+    white-space: normal;
   }
 }
