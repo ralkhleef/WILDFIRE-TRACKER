@@ -21,13 +21,42 @@ WildFire-Tracker is a full-stack wildfire tracking app. Users can view wildfire 
 
 ## Architecture
 
+Full version: [System architecture diagram](docs/system-architecture.md)
+
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "background": "#fffdf7",
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#111827",
+    "primaryBorderColor": "#cbd5e1",
+    "lineColor": "#334155",
+    "fontFamily": "Inter, Arial, sans-serif"
+  }
+}}%%
+
 flowchart LR
-    User[User] --> React[React Frontend]
-    React --> API[API Gateway / Express Backend]
-    API --> Prisma[Prisma]
-    Prisma --> DB[(PostgreSQL)]
-    API --> External[External APIs<br/>CAL FIRE, NASA, NWS, Google, Resend]
+    U["User"] --> F["React + Vite Frontend"]
+    F --> G["API Gateway / Express"]
+    G --> MS["Microservices"]
+    MS --> P["Prisma ORM"]
+    P --> DB[("PostgreSQL")]
+    MS --> EXT["External APIs<br/>CAL FIRE, NASA FIRMS, NWS, Google, Resend"]
+
+    classDef user fill:#ffffff,stroke:#94a3b8,stroke-width:2px,color:#0f172a;
+    classDef frontend fill:#eff6ff,stroke:#60a5fa,stroke-width:2px,color:#0f172a;
+    classDef backend fill:#f0fdf4,stroke:#4ade80,stroke-width:2px,color:#0f172a;
+    classDef service fill:#fff7ed,stroke:#fb923c,stroke-width:2px,color:#0f172a;
+    classDef data fill:#f0f9ff,stroke:#38bdf8,stroke-width:2px,color:#0f172a;
+    classDef external fill:#faf5ff,stroke:#a78bfa,stroke-width:2px,color:#0f172a;
+
+    class U user;
+    class F frontend;
+    class G backend;
+    class MS service;
+    class P,DB data;
+    class EXT external;
 ```
 
 ## Microservices Diagram

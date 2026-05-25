@@ -1,95 +1,120 @@
 # System Architecture
 
-This diagram shows the full WildFire-Tracker system and  includes the React frontend, API Gateway, backend services, PostgreSQL/Prisma database and any external APIs.
+This diagram shows the full WildFire-Tracker system.
+
+It includes the React frontend, API Gateway, backend services, PostgreSQL/Prisma database, external APIs, and planned deployment pieces.
 
 ## Main Architecture Diagram
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "background": "#fffdf7",
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#111827",
+    "primaryBorderColor": "#cbd5e1",
+    "lineColor": "#334155",
+    "fontFamily": "Inter, Arial, sans-serif"
+  }
+}}%%
+
 flowchart LR
-    U["👤 User"]
+    U["User"]
 
-    subgraph CLOUD["☁️ Deployment / Cloud Layer"]
-        HOST_FE["🌐 Public Frontend Hosting<br/>(TODO deployed website)"]
-        HOST_BE["☁️ AWS Backend Hosting<br/>(planned)"]
-        HTTPS["🔒 HTTPS / ACM<br/>(planned)"]
-        CW["📊 CloudWatch Logs<br/>(planned)"]
+    subgraph FE["Frontend Layer"]
+        direction TB
+        F["React + Vite Frontend<br/>Map, pages, forms"]
     end
 
-    subgraph FE["💻 Frontend Layer"]
-        REACT["⚛️ React + Vite Frontend<br/>Map, pages, forms"]
+    subgraph BE["Backend Layer"]
+        direction TB
+        G["API Gateway / Express<br/>CORS, JSON, routing<br/>Local port 5050"]
     end
 
-    subgraph BE["🚪 Backend Layer"]
-        GATEWAY["API Gateway / Express<br/>CORS, JSON, routing<br/>Local port 5050"]
+    subgraph MS["Microservices Layer"]
+        direction TB
+        FD["Fire Data Service<br/>CAL FIRE, NASA FIRMS, NWS<br/>Fire CRUD<br/>Port 5052"]
+        AU["Auth / User Service<br/>JWT, profile, saved locations<br/>Port 5051"]
+        AN["Alert / Notification Service<br/>Preferences, local alerts, email<br/>Port 5053"]
+        ER["Evacuation Resource Service<br/>Resource CRUD, nearby lookup<br/>Port 5054"]
     end
 
-    subgraph MS["🧩 Microservices Layer"]
-        AUTH["🔐 Auth/User Service<br/>JWT, profile, saved locations<br/>Port 5051"]
-        FIRE["🔥 Fire Data Service<br/>CAL FIRE, NASA FIRMS, NWS, fire CRUD<br/>Port 5052"]
-        ALERT["🔔 Alert/Notification Service<br/>preferences, local alerts, email<br/>Port 5053"]
-        EVAC["🗺️ Evacuation Resource Service<br/>resource CRUD, nearby lookup<br/>Port 5054"]
+    subgraph EXT["External Services"]
+        direction TB
+        CF["CAL FIRE API<br/>Official incidents"]
+        NASA["NASA FIRMS<br/>Thermal detections"]
+        NWS["NWS Alerts API<br/>Weather alerts"]
+        GM["Google Maps / Geolocation<br/>Map and location tools"]
+        GO["Google OAuth<br/>Optional placeholder"]
+        RE["Resend Email<br/>Optional email alerts"]
     end
 
-    subgraph DATA["🗄️ Data Layer"]
-        PRISMA["Prisma ORM"]
-        DB[("PostgreSQL Database<br/>users, fires, alerts, resources")]
+    subgraph DATA["Data Layer"]
+        direction LR
+        P["Prisma ORM"]
+        DB[("PostgreSQL Database<br/>Users, fires, alerts, resources")]
     end
 
-    subgraph EXT["🌎 External Services"]
-        CF["🚒 CAL FIRE API<br/>official incidents"]
-        NASA["🛰️ NASA FIRMS<br/>thermal detections"]
-        NWS["🌦️ NWS Alerts API<br/>weather alerts"]
-        MAPS["📍 Google Maps / Geolocation<br/>map and location tools"]
-        OAUTH["🔑 Google OAuth<br/>optional placeholder"]
-        RESEND["✉️ Resend Email<br/>optional email alerts"]
+    subgraph DEP["Deployment / Cloud Layer"]
+        direction LR
+        HOST["Public Frontend Hosting<br/>TODO deployed website"]
+        HTTPS["HTTPS / ACM<br/>Planned"]
+        AWS["AWS Backend Hosting<br/>Planned"]
+        CW["CloudWatch Logs<br/>Planned"]
     end
 
-    U --> HOST_FE
-    HOST_FE --> REACT
-    U --> REACT
-    REACT -->|"HTTP requests"| HTTPS
-    HTTPS --> GATEWAY
-    HOST_BE --> GATEWAY
-    GATEWAY --> AUTH
-    GATEWAY --> FIRE
-    GATEWAY --> ALERT
-    GATEWAY --> EVAC
+    U --> F
+    F --> G
+    G --> FD
+    G --> AU
+    G --> AN
+    G --> ER
 
-    AUTH --> PRISMA
-    FIRE --> PRISMA
-    ALERT --> PRISMA
-    EVAC --> PRISMA
-    PRISMA --> DB
+    FD --> CF
+    FD --> NASA
+    FD --> NWS
+    FD --> GM
 
-    FIRE --> CF
-    FIRE --> NASA
-    FIRE --> NWS
-    REACT --> MAPS
-    FIRE --> MAPS
-    AUTH -. optional .-> OAUTH
-    ALERT -. optional .-> RESEND
+    AU -. optional .-> GO
+    AN -. optional .-> RE
 
-    GATEWAY -. logs .-> CW
-    AUTH -. logs .-> CW
-    FIRE -. logs .-> CW
-    ALERT -. logs .-> CW
-    EVAC -. logs .-> CW
+    FD --> P
+    AU --> P
+    AN --> P
+    ER --> P
+    P --> DB
 
-    classDef user fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#111827;
-    classDef cloud fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#111827;
-    classDef frontend fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#111827;
-    classDef backend fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#111827;
-    classDef service fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#111827;
-    classDef data fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#111827;
-    classDef external fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#111827;
+    HOST -->|HTTP requests| HTTPS
+    HTTPS --> AWS
+    AWS -. logs .-> CW
+    FD -. logs .-> CW
+    AU -. logs .-> CW
+    AN -. logs .-> CW
+    ER -. logs .-> CW
+
+    classDef user fill:#ffffff,stroke:#94a3b8,stroke-width:2px,color:#0f172a;
+    classDef frontend fill:#eff6ff,stroke:#60a5fa,stroke-width:2px,color:#0f172a;
+    classDef backend fill:#f0fdf4,stroke:#4ade80,stroke-width:2px,color:#0f172a;
+    classDef service fill:#fff7ed,stroke:#fb923c,stroke-width:2px,color:#0f172a;
+    classDef external fill:#faf5ff,stroke:#a78bfa,stroke-width:2px,color:#0f172a;
+    classDef data fill:#f0f9ff,stroke:#38bdf8,stroke-width:2px,color:#0f172a;
+    classDef deploy fill:#f8fafc,stroke:#93c5fd,stroke-width:2px,color:#0f172a;
 
     class U user;
-    class HOST_FE,HOST_BE,HTTPS,CW cloud;
-    class REACT frontend;
-    class GATEWAY backend;
-    class AUTH,FIRE,ALERT,EVAC service;
-    class PRISMA,DB data;
-    class CF,NASA,NWS,MAPS,OAUTH,RESEND external;
+    class F frontend;
+    class G backend;
+    class FD,AU,AN,ER service;
+    class CF,NASA,NWS,GM,GO,RE external;
+    class P,DB data;
+    class HOST,HTTPS,AWS,CW deploy;
+
+    style FE fill:#eff6ff,stroke:#93c5fd,stroke-width:2px,color:#1d4ed8;
+    style BE fill:#f0fdf4,stroke:#86efac,stroke-width:2px,color:#15803d;
+    style MS fill:#fff7ed,stroke:#fdba74,stroke-width:2px,color:#ea580c;
+    style EXT fill:#faf5ff,stroke:#c4b5fd,stroke-width:2px,color:#7e22ce;
+    style DATA fill:#f0f9ff,stroke:#7dd3fc,stroke-width:2px,color:#0369a1;
+    style DEP fill:#f8fafc,stroke:#bfdbfe,stroke-width:2px,color:#2563eb;
 ```
 
 ## Component Explanation
