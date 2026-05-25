@@ -26,7 +26,6 @@ const emergencyContacts = [
   { label: "Local community resources", detail: "County services, shelters, transportation", href: "tel:211", value: "211" },
 ];
 
-// Official links supplied for this page.
 const officialLinks = [
   { title: "CAL FIRE Incidents", displayUrl: "fire.ca.gov/incidents", href: "https://www.fire.ca.gov/incidents", Icon: ShieldCheck },
   { title: "CAL FIRE Ready For Wildfire", displayUrl: "readyforwildfire.org", href: "https://readyforwildfire.org", Icon: Flame },
@@ -92,7 +91,6 @@ const wildfireVideos = [
   },
 ];
 
-// Top-of-page feature cards. Each opens a compact resource dialog.
 const heroCards = [
   {
     key: "checklist",

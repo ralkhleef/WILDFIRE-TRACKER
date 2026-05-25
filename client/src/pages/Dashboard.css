@@ -9,7 +9,6 @@
   gap: 16px;
 }
 
-/* Header — clean, minimal. */
 .pageHeader {
   display: flex;
   align-items: flex-end;
@@ -42,7 +41,6 @@
   font-weight: 500;
 }
 
-/* Compact stats strip — material card, single row, dividers between chips. */
 .dashboardStatsGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -88,7 +86,6 @@
 .dashboardStat--danger strong { color: var(--accent-strong); }
 .dashboardStat--orange strong { color: var(--orange-strong); }
 
-/* Map-first grid: large map left, narrow feed right. */
 .dashboardGrid {
   display: grid;
   grid-template-columns: minmax(0, 2.7fr) minmax(280px, 0.82fr);
@@ -98,7 +95,6 @@
   min-height: 0;
 }
 
-/* Material-style panel with soft shadow, no chunky border. */
 .dashboardPanel {
   background: var(--bg);
   border-radius: 8px;
@@ -168,7 +164,6 @@
   min-width: 0;
 }
 
-/* Recent fire feed — divider rows inside one panel. */
 .recentFireList {
   display: flex;
   flex-direction: column;
@@ -230,7 +225,6 @@
   gap: 4px;
 }
 
-/* Source chips — small material chips. */
 .sourceBadge {
   display: inline-flex;
   align-items: center;
@@ -251,7 +245,6 @@
 .sourceBadge--nasa { background: var(--orange); color: #fff; }
 .sourceBadge--seed { background: var(--code-bg); color: var(--text); }
 
-/* Severity / operational panel. */
 .severitySummary {
   display: flex;
   flex-direction: column;

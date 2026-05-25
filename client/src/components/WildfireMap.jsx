@@ -8,8 +8,6 @@ const apiBase =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 const googleMapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || "";
 
-// Default view shows all of California. Users can pan or tap "Use my location"
-// to recenter elsewhere.
 const DEFAULT_CENTER = { lat: 37.2, lng: -119.5 };
 const DEFAULT_ZOOM = 6;
 const DEFAULT_USER_LOCATION_RADIUS_MILES = 100;
@@ -160,7 +158,6 @@ function isValidLatLng(latitude, longitude) {
   );
 }
 
-// Emoji-rendered SVG markers: official fires, thermal detections, and user location.
 function makeEmojiMarkerIcon(googleMaps, emoji, options = {}) {
   if (!googleMaps) return undefined;
   const size = options.size || 36;
@@ -217,14 +214,16 @@ export default function WildfireMap({
     googleMapsApiKey: googleMapsKey,
   });
 
-  const initial = useMemo(() => {
-    if (initialCenter?.latitude && initialCenter?.longitude) {
-      return { lat: initialCenter.latitude, lng: initialCenter.longitude };
+  const initialCenterValue = useMemo(() => {
+    const latitude = Number(initialCenter?.latitude);
+    const longitude = Number(initialCenter?.longitude);
+    if (isValidLatLng(latitude, longitude)) {
+      return { lat: latitude, lng: longitude };
     }
-    return DEFAULT_CENTER;
-  }, [initialCenter]);
+    return null;
+  }, [initialCenter?.latitude, initialCenter?.longitude]);
 
-  const [center, setCenter] = useState(initial);
+  const [center, setCenter] = useState(initialCenterValue || DEFAULT_CENTER);
   const [userLocation, setUserLocation] = useState(null);
   const [radius, setRadius] = useState(
     compact ? DEFAULT_USER_LOCATION_RADIUS_MILES : DEFAULT_FULL_RADIUS_MILES,
@@ -245,11 +244,7 @@ export default function WildfireMap({
   const [weatherAlerts, setWeatherAlerts] = useState([]);
   const [alertsLoading, setAlertsLoading] = useState(false);
   const [alertsError, setAlertsError] = useState("");
-  // NASA FIRMS thermal detections are OFF by default — they are NOT confirmed
-  // fire incidents and we keep them visually + semantically separate.
   const [showHotspots, setShowHotspots] = useState(false);
-  // Demo mode is OFF by default. Picks up ?demo=true from the URL on first
-  // load. When enabled the backend includes "Demo Data" seed fires.
   const [demoMode, setDemoMode] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -261,9 +256,12 @@ export default function WildfireMap({
   const toggleMapTool = (key) => setMapTool((current) => (current === key ? null : key));
 
   const mapRef = useRef(null);
+  const mapCenter = userLocation || initialCenterValue || center;
 
   const fetchFires = useCallback(
     async (lat, lng, miles, options = {}) => {
+      await Promise.resolve();
+      setSelectedFire(null);
       setLoading(true);
       setError("");
       const includeHotspots = options.includeHotspots ?? showHotspots;
@@ -336,6 +334,7 @@ export default function WildfireMap({
   );
 
   const fetchWeatherAlerts = useCallback(async () => {
+    await Promise.resolve();
     setAlertsLoading(true);
     setAlertsError("");
     try {
@@ -353,28 +352,38 @@ export default function WildfireMap({
     }
   }, []);
 
-  // Default load: official incidents only. Re-fetch whenever a data layer changes.
   useEffect(() => {
-    const lat = userLocation?.lat;
-    const lng = userLocation?.lng;
-    setSelectedFire(null);
-    fetchFires(lat, lng, radius, {
-      includeHotspots: showHotspots,
-      includeOfficial: showOfficial,
-      thermalFilter,
-      demo: demoMode,
+    const activeCenter = userLocation || initialCenterValue;
+    const lat = activeCenter?.lat;
+    const lng = activeCenter?.lng;
+    let cancelled = false;
+
+    Promise.resolve().then(() => {
+      if (cancelled) return;
+      fetchFires(lat, lng, radius, {
+        includeHotspots: showHotspots,
+        includeOfficial: showOfficial,
+        thermalFilter,
+        demo: demoMode,
+      });
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showHotspots, showOfficial, thermalFilter, demoMode]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [demoMode, fetchFires, initialCenterValue, radius, showHotspots, showOfficial, thermalFilter, userLocation]);
 
   useEffect(() => {
-    setSelectedAlert(null);
-    if (!showWeatherAlerts) {
-      setWeatherAlerts([]);
-      setAlertsError("");
-      return;
-    }
-    fetchWeatherAlerts();
+    if (!showWeatherAlerts) return undefined;
+    let cancelled = false;
+
+    Promise.resolve().then(() => {
+      if (!cancelled) fetchWeatherAlerts();
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [fetchWeatherAlerts, showWeatherAlerts]);
 
   const displayStatus = useMemo(() => {
@@ -409,15 +418,6 @@ export default function WildfireMap({
     return status;
   }, [alertsError, alertsLoading, demoMode, fires, showHotspots, showWeatherAlerts, status, weatherAlerts]);
 
-  // When the parent supplies a new initial center, recenter and re-fetch nearby.
-  useEffect(() => {
-    if (!initialCenter) return;
-    const next = { lat: initialCenter.latitude, lng: initialCenter.longitude };
-    setCenter(next);
-    fetchFires(next.lat, next.lng, radius);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCenter?.latitude, initialCenter?.longitude]);
-
   const handleUseMyLocation = useCallback(() => {
     setLocationError("");
     if (!("geolocation" in navigator)) {
@@ -434,12 +434,6 @@ export default function WildfireMap({
           mapRef.current.setZoom(8);
         }
         if (onLocationChange) onLocationChange(coords.latitude, coords.longitude);
-        fetchFires(coords.latitude, coords.longitude, radius, {
-          includeHotspots: showHotspots,
-          includeOfficial: showOfficial,
-          thermalFilter,
-          demo: demoMode,
-        });
       },
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
@@ -452,18 +446,28 @@ export default function WildfireMap({
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
-  }, [demoMode, fetchFires, onLocationChange, radius, showHotspots, showOfficial, thermalFilter]);
+  }, [onLocationChange]);
 
   const handleApplyRadius = useCallback(() => {
-    const lat = userLocation?.lat ?? center.lat;
-    const lng = userLocation?.lng ?? center.lng;
+    const activeCenter = userLocation || initialCenterValue || center;
+    const lat = activeCenter.lat;
+    const lng = activeCenter.lng;
     fetchFires(lat, lng, radius, {
       includeHotspots: showHotspots,
       includeOfficial: showOfficial,
       thermalFilter,
       demo: demoMode,
     });
-  }, [demoMode, fetchFires, center.lat, center.lng, radius, userLocation, showHotspots, showOfficial, thermalFilter]);
+  }, [demoMode, fetchFires, center, initialCenterValue, radius, userLocation, showHotspots, showOfficial, thermalFilter]);
+
+  const handleWeatherAlertsToggle = useCallback((checked) => {
+    setSelectedAlert(null);
+    setShowWeatherAlerts(checked);
+    if (!checked) {
+      setWeatherAlerts([]);
+      setAlertsError("");
+    }
+  }, []);
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
@@ -534,7 +538,7 @@ export default function WildfireMap({
   const renderMap = () => (
     <GoogleMap
       mapContainerClassName="googleMapCanvas"
-      center={center}
+      center={mapCenter}
       zoom={DEFAULT_ZOOM}
       mapTypeId={mapStyle}
       onLoad={onMapLoad}
@@ -754,7 +758,7 @@ export default function WildfireMap({
                 <input
                   type="checkbox"
                   checked={showWeatherAlerts}
-                  onChange={(event) => setShowWeatherAlerts(event.target.checked)}
+                  onChange={(event) => handleWeatherAlertsToggle(event.target.checked)}
                 />
                 ☁️ Weather Alerts
               </label>
@@ -893,7 +897,7 @@ export default function WildfireMap({
                 <input
                   type="checkbox"
                   checked={showWeatherAlerts}
-                  onChange={(event) => setShowWeatherAlerts(event.target.checked)}
+                  onChange={(event) => handleWeatherAlertsToggle(event.target.checked)}
                 />
                 ☁️ Weather Alerts
               </label>
@@ -995,7 +999,7 @@ export default function WildfireMap({
                 <input
                   type="checkbox"
                   checked={showWeatherAlerts}
-                  onChange={(event) => setShowWeatherAlerts(event.target.checked)}
+                  onChange={(event) => handleWeatherAlertsToggle(event.target.checked)}
                 />
                 ☁️ Weather Alerts
               </label>

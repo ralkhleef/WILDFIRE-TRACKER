@@ -1,44 +1,33 @@
-/*
- * WildFire-Tracker theme tokens — Creative Tim Material Dashboard inspired,
- * repainted with a wildfire palette (red / orange / off-white / charcoal).
- * Soft material shadows, intentional spacing, no pink/purple tones.
- */
 :root {
-  /* Wildfire palette */
-  --accent: #dc2626;          /* primary red */
-  --accent-strong: #991b1b;   /* deep red */
-  --accent-bg: #fef2f2;       /* light red wash */
+  --accent: #dc2626;
+  --accent-strong: #991b1b;
+  --accent-bg: #fef2f2;
   --accent-soft: #fee2e2;
-  --orange: #f97316;          /* NASA FIRMS / accent */
+  --orange: #f97316;
   --orange-strong: #c2410c;
   --orange-bg: #fff7ed;
   --warning: #eab308;
   --success: #16a34a;
   --success-bg: #f0fdf4;
 
-  /* Material Dashboard-ish gradient for active states */
   --gradient-fire: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
 
-  /* Surface tokens */
   --bg: #ffffff;
   --page: #fffaf7;
   --code-bg: #f8fafc;
   --border: #e5e7eb;
   --divider: #f1f3f5;
 
-  /* Material-style soft shadows (calmer than Berry's, no purple) */
   --shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.04);
   --shadow-md: 0 4px 6px -1px rgba(17, 24, 39, 0.06), 0 2px 4px -1px rgba(17, 24, 39, 0.04);
   --shadow-lg: 0 10px 20px -8px rgba(17, 24, 39, 0.10);
   --shadow-fire: 0 4px 14px -4px rgba(220, 38, 38, 0.45);
   --shadow-orange: 0 4px 14px -4px rgba(249, 115, 22, 0.40);
 
-  /* Text tokens */
   --text-h: #111827;
   --text: #4b5563;
   --text-muted: #6b7280;
 
-  /* Type — Material Dashboard uses Roboto; we keep a system stack but lean Roboto-ish */
   --sans: 'Roboto', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   --heading: 'Roboto', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -99,7 +88,6 @@ code {
 
 input, select, textarea { font: inherit; }
 
-/* Material-style buttons */
 .btnPrimary {
   display: inline-flex;
   align-items: center;

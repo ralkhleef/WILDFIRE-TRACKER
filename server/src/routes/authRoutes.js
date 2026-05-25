@@ -1,4 +1,3 @@
-// Declares authentication routes for signup, login, Google OAuth, and current user access.
 const express = require('express');
 
 const authController = require('../controllers/authController');

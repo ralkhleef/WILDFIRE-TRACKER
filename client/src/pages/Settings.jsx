@@ -21,35 +21,24 @@ export default function Settings() {
   const [saveMsg, setSaveMsg] = useState("");
   const [locError, setLocError] = useState("");
   const [locBusy, setLocBusy] = useState(false);
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("user") || "null");
-    } catch {
-      return null;
-    }
-  });
-
   const isLoggedIn = !!getToken();
 
   useEffect(() => {
     if (!isLoggedIn) return;
     async function loadSettings() {
       try {
-        const [locationsRes, alertsRes, userRes] = await Promise.all([
+        const [locationsRes, alertsRes] = await Promise.all([
           fetch(`${apiBase}/api/users/saved-locations`, { headers: authHeaders() }),
           fetch(`${apiBase}/api/alerts`, { headers: authHeaders() }),
-          fetch(`${apiBase}/api/auth/me`, { headers: authHeaders() }),
         ]);
         const locationsBody = await locationsRes.json().catch(() => ({}));
         const alertsBody = await alertsRes.json().catch(() => ({}));
-        const userBody = await userRes.json().catch(() => ({}));
         if (locationsRes.ok) setSavedLocations(Array.isArray(locationsBody?.data) ? locationsBody.data : []);
         if (alertsRes.ok && alertsBody?.data?.alertPreference) {
           setAlertRadius(alertsBody.data.alertPreference.radius ?? 25);
           setNotificationsOn(alertsBody.data.alertPreference.enabled ?? true);
           setEmailEnabled(alertsBody.data.alertPreference.emailAlertsEnabled ?? false);
         }
-        if (userRes.ok && userBody?.data) setCurrentUser(userBody.data);
       } catch {
         // Settings can still work locally when the backend is unavailable.
       }
@@ -203,7 +192,6 @@ export default function Settings() {
           </label>
         </header>
 
-        {/* Push notifications */}
         <section className="settingsSection">
           <div className="settingsRow">
             <div>
@@ -223,7 +211,6 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Email alerts */}
         <section className="settingsSection">
           <div className="settingsRow">
             <div>
@@ -243,7 +230,6 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Alert radius */}
         <section className="settingsSection">
           <h2 className="settingsRowTitle">Alert radius</h2>
           <p className="settingsRowSub">Notify when a fire is within this distance of a monitored location</p>
@@ -263,7 +249,6 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Severity filter */}
         <section className="settingsSection">
           <h2 className="settingsRowTitle">Alert severity filter</h2>
           <p className="settingsRowSub">Only notify for selected severities (applies to push and email)</p>
@@ -285,7 +270,6 @@ export default function Settings() {
           </p>
         </section>
 
-        {/* Saved locations */}
         <section className="settingsSection">
           <h2 className="settingsRowTitle">Saved locations (monitoring)</h2>
           <p className="settingsRowSub">We check fires near each saved place using your alert radius</p>
@@ -358,7 +342,6 @@ export default function Settings() {
           )}
         </section>
 
-        {/* Save button */}
         <div className="settingsSaveRow">
           <button
             type="button"

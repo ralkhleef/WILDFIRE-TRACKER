@@ -1,4 +1,3 @@
-// Public read-only NWS alert routes (no auth required).
 const express = require('express');
 const nwsAlertController = require('../controllers/nwsAlertController');
 

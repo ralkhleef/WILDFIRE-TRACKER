@@ -19,8 +19,9 @@ function getAuthHeaders() {
 
 export default function Profile() {
   const avatarInputId = useId();
+  const hasToken = typeof localStorage !== "undefined" && Boolean(localStorage.getItem("token"));
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(hasToken);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -56,11 +57,6 @@ export default function Profile() {
     const headers = getAuthHeaders();
 
     if (!headers) {
-      // Auth status is read from localStorage at mount so this page can show
-      // a sign-in prompt without making a protected API request.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(false);
-      setUserId(null);
       return;
     }
 

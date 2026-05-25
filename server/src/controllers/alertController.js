@@ -1,4 +1,3 @@
-// Handles alert preference requests and location-based alert lookups.
 const asyncHandler = require('../utils/asyncHandler');
 const alertService = require('../services/alertService');
 

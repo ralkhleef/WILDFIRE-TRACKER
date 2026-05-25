@@ -1,4 +1,3 @@
-// Handles authentication requests and response formatting for auth routes.
 const passport = require('passport');
 
 const env = require('../config/env');
@@ -48,9 +47,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   });
 });
 
-// Stateless logout — JWTs are stored client-side. The endpoint exists so the
-// frontend can call POST /api/auth/logout uniformly and so we can later swap
-// to server-side session/cookie invalidation without changing the contract.
+// JWTs live in the browser, so logout just keeps the API contract in place.
 const logout = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,

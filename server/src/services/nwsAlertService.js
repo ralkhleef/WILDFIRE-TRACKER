@@ -1,8 +1,3 @@
-// National Weather Service alerts service.
-// Pulls wildfire-relevant alerts (Red Flag Warning, Fire Weather Watch,
-// Extreme Fire Danger, Evacuation Orders) and normalizes them for the
-// frontend. Network errors return [] rather than throwing, so the route
-// degrades gracefully if NWS is unreachable.
 const env = require('../config/env');
 
 const FIRE_ALERT_KEYWORDS = [
@@ -20,7 +15,7 @@ const isFireRelevant = (event) => {
   return FIRE_ALERT_KEYWORDS.some((word) => normalized.includes(word));
 };
 
-// Look up severity in priority order so the frontend can show colored chips.
+// Pick the strongest matching severity for the UI chip.
 const severityForEvent = (event) => {
   const normalized = String(event || '').toLowerCase();
   if (normalized.includes('extreme')) return 'critical';

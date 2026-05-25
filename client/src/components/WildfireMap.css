@@ -258,7 +258,6 @@
   position: relative;
 }
 
-/* Tiny floating control bar — top-left. */
 .mapFloatingControls {
   position: absolute;
   top: 12px;
@@ -500,7 +499,6 @@
   border-radius: 999px;
 }
 
-/* Floating vertical icon toolbar — sits over the map. */
 .mapFloatingToolbar {
   position: absolute;
   top: 12px;
@@ -540,7 +538,6 @@
   color: #fff;
 }
 
-/* Overlay panels — small, hidden by default. */
 .mapFloatingPanel {
   position: absolute;
   top: 12px;
@@ -618,7 +615,6 @@
   border: 2px solid var(--border-strong, #d1d5db);
 }
 
-/* Basemap selector tiles — small visual chips. */
 .mapBasemapTiles {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -647,7 +643,6 @@
   color: var(--text-h);
 }
 
-/* Selected state uses ONLY a red outer border — no colored fill. */
 .mapBasemapTile.active {
   border-color: var(--accent);
   color: var(--text-h);
@@ -655,7 +650,6 @@
   box-shadow: 0 0 0 1px var(--accent) inset;
 }
 
-/* Neutral grayscale previews with hairline texture. */
 .mapBasemapTilePreview {
   display: block;
   width: 100%;
@@ -701,7 +695,6 @@
     var(--bg);
 }
 
-/* Fire list overlay. */
 .mapFireOverlayList {
   list-style: none;
   margin: 0;

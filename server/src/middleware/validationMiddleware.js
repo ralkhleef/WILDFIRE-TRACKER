@@ -1,4 +1,3 @@
-// Collects reusable validation rules for request bodies, path params, and query params.
 const { body, param, query, validationResult } = require('express-validator');
 
 const ApiError = require('../utils/ApiError');

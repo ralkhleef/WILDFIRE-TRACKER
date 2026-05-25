@@ -1,7 +1,3 @@
-// Handles wildfire record lookups from the database and external API integrations.
-// Public list/nearby responses are source-aware: CAL FIRE active/current
-// incidents are confirmed records, while NASA FIRMS records are recent
-// satellite thermal detections only.
 const env = require('../config/env');
 const prisma = require('../config/prisma');
 const ApiError = require('../utils/ApiError');
@@ -149,12 +145,7 @@ const filterByRegion = (fires, region) => {
   return fires;
 };
 
-// Public listFires.
-//   - includeExternal=false (default) → official CAL FIRE incidents only.
-//     Seed/demo records are only surfaced when demo=true/demoMode=true.
-//   - includeExternal=true OR includeHotspots=true → also include NASA FIRMS
-//     thermal detections as a separate "thermal_detection" layer.
-//   - source='calfire' or 'firms' → restrict to that single layer.
+// Controls whether the API returns official incidents, NASA hotspots, or both.
 const listFires = async ({
   includeExternal = false,
   includeHotspots = false,
@@ -190,9 +181,7 @@ const listFires = async ({
   const storedRecords = storedFires.status === 'fulfilled' ? storedFires.value : [];
   const seedFires = storedRecords.filter(isSeedSource);
 
-  // Seed/demo records are opt-in only. They should never appear in normal API
-  // responses, but when demo=true they are added even if real CAL FIRE data is
-  // available so the UI can be tested predictably.
+  // Demo fires stay hidden unless demo mode is requested.
   const demoFires = demo && wantsOfficial && source !== 'firms' ? seedFires : [];
   const baseOfficial = wantsOfficial ? mergeFireSources(calfireFires, demoFires) : [];
 
@@ -214,9 +203,7 @@ const listFires = async ({
 };
 
 const getFireById = async (fireId) => {
-  // For a single record we still return it even if it is older or outside CA;
-  // detail pages should be able to render historical records the user navigates to.
-  // We just don't surface them in main listings.
+  // Detail pages can show older records that are hidden from the live feed.
   const storedFire = await prisma.wildfireRecord.findUnique({
     where: { id: fireId },
   });
@@ -225,7 +212,6 @@ const getFireById = async (fireId) => {
     return storedFire;
   }
 
-  // Look in the unfiltered external feed too.
   const [calfireResult, nasaResult] = await Promise.allSettled([
     calfireService.fetchActiveFires(),
     nasaService.fetchActiveFires(),
@@ -267,7 +253,7 @@ const getNearbyFires = async ({
     firmsConfidence,
     minFrp,
   });
-  // listFires has already restricted to CA + last 7 days; do a defensive coord check too.
+  // Keep nearby results inside California even if a source sends bad coordinates.
   const cleaned = fires.filter((f) => isInCalifornia(Number(f.latitude), Number(f.longitude)));
   return filterNearbyFires(cleaned, latitude, longitude, radius).sort((first, second) => {
     const priorityDelta = getSourcePriority(first) - getSourcePriority(second);

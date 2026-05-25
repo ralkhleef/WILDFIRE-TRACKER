@@ -1,4 +1,3 @@
-// HTTP layer for National Weather Service fire-relevant alerts.
 const asyncHandler = require('../utils/asyncHandler');
 const nwsAlertService = require('../services/nwsAlertService');
 
@@ -20,8 +19,7 @@ const getNearbyFireAlerts = asyncHandler(async (req, res) => {
 
   const alerts = await nwsAlertService.fetchActiveAlerts({ area });
 
-  // NWS alerts are polygon-based; for now we just return the full California
-  // feed back. A future enhancement could intersect against polygons.
+  // Nearby filtering would need polygon math, so this returns the CA feed.
   res.status(200).json({
     success: true,
     count: alerts.length,

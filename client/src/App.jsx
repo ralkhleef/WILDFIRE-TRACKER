@@ -64,8 +64,6 @@ function AppLayout() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      setIsLoggedIn(false);
-      setIsGuest(localStorage.getItem("guestMode") === "true");
       return;
     }
 

@@ -1,4 +1,3 @@
-// CRUD and nearby lookup for evacuation/shelter resources stored in PostgreSQL.
 const prisma = require('../config/prisma');
 const { getDistanceInMiles } = require('../utils/geolocation');
 

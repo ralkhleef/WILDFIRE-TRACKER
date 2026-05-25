@@ -1,4 +1,3 @@
-// Provides reusable geolocation helpers for distance checks and nearby wildfire filtering.
 const EARTH_RADIUS_MILES = 3958.8;
 
 const toRadians = (degrees) => (degrees * Math.PI) / 180;

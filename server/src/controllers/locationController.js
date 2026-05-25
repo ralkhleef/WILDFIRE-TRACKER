@@ -1,4 +1,3 @@
-// HTTP layer for Google Maps Platform helpers (geocoding / places / AQI).
 const asyncHandler = require('../utils/asyncHandler');
 const locationService = require('../services/locationService');
 

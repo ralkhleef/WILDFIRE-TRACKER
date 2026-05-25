@@ -1,22 +1,16 @@
-// Inserts a few sample wildfire records for local testing.
 require('dotenv').config();
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-// Demo records are dated relative to "today" so they always land inside the
-// rolling last-7-days window the API uses for the active feed.
 const daysAgo = (n) => {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return d;
 };
 
-// Five Orange County-area demo fires for testing layout/stats only.
-// They are clearly labeled "Demo Fire" with source "seed" so the API filters
-// keep them hidden unless `demo=true` is passed.
 const sampleWildfires = [
   {
     name: 'Demo Fire — Santiago Canyon',

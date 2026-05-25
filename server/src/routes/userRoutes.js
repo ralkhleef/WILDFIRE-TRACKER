@@ -1,4 +1,3 @@
-// Declares user profile and saved location routes for authenticated users.
 const express = require('express');
 
 const userController = require('../controllers/userController');

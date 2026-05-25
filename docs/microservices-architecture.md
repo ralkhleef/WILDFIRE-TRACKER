@@ -1,36 +1,65 @@
 # Microservices Architecture
 
-The React frontend still uses one API URL:
+This is the bonus extra credit part of the project.
+
+The frontend still uses one API URL:
 
 ```text
 VITE_API_URL=http://localhost:5050
 ```
 
-Port `5050` is now an API Gateway. It accepts browser requests, handles CORS/logging/health, then forwards the same route names to independent services.
+Port `5050` is the API Gateway. It receives frontend requests and forwards them to smaller backend services.
+
+## Diagram
+
+```mermaid
+flowchart LR
+    Frontend[React Frontend] --> Gateway[API Gateway<br/>5050]
+    Gateway --> Auth[Auth/User Service<br/>5051]
+    Gateway --> Fire[Fire Data Service<br/>5052]
+    Gateway --> Alerts[Alert/Notification Service<br/>5053]
+    Gateway --> Evac[Evacuation Resource Service<br/>5054]
+
+    Auth --> DB[(Shared PostgreSQL)]
+    Fire --> DB
+    Alerts --> DB
+    Evac --> DB
+
+    Fire --> External[CAL FIRE, NASA, NWS, Google APIs]
+    Alerts --> Email[Resend Email]
+```
 
 ## Services
 
-| Service | Port | Main Routes | Responsibility |
-| --- | --- | --- | --- |
-| API Gateway | 5050 | `/api/*` | Frontend entrypoint, CORS, logging, health, forwarding |
-| Auth/User Service | 5051 | `/api/auth/*`, `/api/users/*` | Signup, login, JWT, current user, profile, saved locations |
-| Fire Data Service | 5052 | `/api/fires/*`, `/api/nws-alerts/*`, `/api/locations/*` | CAL FIRE/NASA feeds, wildfire CRUD, nearby fires, weather/location helpers |
-| Alert/Notification Service | 5053 | `/api/alerts/*` | Alert preferences, local alerts, notification-ready payloads |
-| Evacuation Resource Service | 5054 | `/api/evacuation-resources/*` | Shelter/resource CRUD and nearby lookup |
+| Service | What it does |
+| --- | --- |
+| API Gateway | Main entry point. Handles CORS, health check, logging, and forwarding. |
+| Auth/User Service | Handles signup, login, JWT, Google OAuth placeholder, profile, and saved locations. |
+| Fire Data Service | Gets fire data, weather alerts, Google helper data, and wildfire CRUD. |
+| Alert/Notification Service | Saves alert preferences and checks local fire alerts. |
+| Evacuation Resource Service | Saves, updates, deletes, lists, and searches evacuation resources. |
+| PostgreSQL database | Shared database used by all services through Prisma. |
 
-## Database
+## How Requests Move
 
-All services use the existing PostgreSQL database through Prisma.
+```mermaid
+sequenceDiagram
+    participant UI as React UI
+    participant GW as API Gateway
+    participant SVC as Domain Service
+    participant DB as PostgreSQL
 
-## Service Communication
+    UI->>GW: HTTP request to /api/...
+    GW->>SVC: Forward to matching service
+    SVC->>DB: Read or write with Prisma
+    DB-->>SVC: Data
+    SVC-->>GW: JSON response
+    GW-->>UI: JSON response
+```
 
-- Frontend -> API Gateway only.
-- API Gateway -> domain service by HTTP.
-- Alert/Notification Service -> Fire Data Service by HTTP when building local fire alerts.
-- JWT stays shared because every service reads the same `JWT_SECRET`.
-- Protected routes keep using `Authorization: Bearer <token>`.
+## Local Commands
 
-## Local Startup
+Run everything together:
 
 ```bash
 cd server
@@ -41,7 +70,7 @@ npm run seed
 npm run dev:microservices
 ```
 
-Or run services individually:
+Run one service at a time:
 
 ```bash
 npm run dev:gateway
@@ -49,14 +78,4 @@ npm run dev:auth
 npm run dev:fire
 npm run dev:alerts
 npm run dev:evacuation
-```
-
-## Checks
-
-```bash
-curl http://localhost:5050/api/health
-curl http://localhost:5051/api/health
-curl http://localhost:5052/api/health
-curl http://localhost:5053/api/health
-curl http://localhost:5054/api/health
 ```

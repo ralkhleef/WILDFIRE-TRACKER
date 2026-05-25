@@ -39,7 +39,6 @@
   color: var(--text-h);
 }
 
-/* Toggle shared styles */
 .settingsNotifToggle,
 .settingsToggle {
   display: flex;
@@ -104,7 +103,6 @@
   color: var(--text);
 }
 
-/* Sections — divider rows, no per-section card shadow. */
 .settingsSection {
   background: var(--bg);
   border: none;
@@ -142,7 +140,6 @@
   line-height: 1.45;
 }
 
-/* Slider */
 .settingsSliderRow {
   display: flex;
   align-items: center;
@@ -170,7 +167,6 @@
   text-align: right;
 }
 
-/* Severity checkboxes */
 .settingsCheckRow {
   display: flex;
   gap: 1.25rem;
@@ -204,7 +200,6 @@
 .settingsSeverityDot--warning  { background: #f97316; }
 .settingsSeverityDot--watch    { background: #eab308; }
 
-/* Notification preview */
 .settingsPreviewSection {
   gap: 14px;
 }
@@ -426,7 +421,6 @@
   text-align: center;
 }
 
-/* Saved locations */
 .settingsLocationList {
   display: flex;
   flex-direction: column;
@@ -528,7 +522,6 @@
   color: #b91c1c;
 }
 
-/* Save row */
 .settingsSaveRow {
   display: flex;
   align-items: center;

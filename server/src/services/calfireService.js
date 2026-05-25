@@ -1,5 +1,3 @@
-// Placeholder service for fetching and normalizing active wildfire data from CAL FIRE.
-// Live CAL FIRE integration can be improved later without changing route/controller logic.
 const crypto = require('crypto');
 
 const env = require('../config/env');
@@ -65,8 +63,7 @@ const isActiveCalfireIncident = (incident) => {
   const status = getIncidentStatusText(incident);
   if (['active', 'current', 'ongoing', 'new'].some((word) => status.includes(word))) return true;
 
-  // Some CAL FIRE feeds only publish current incidents and do not include an
-  // explicit active flag, so absence of an inactive/archive marker is allowed.
+  // Some CAL FIRE feeds omit active flags, so only clear archive words hide a fire.
   return true;
 };
 

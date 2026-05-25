@@ -19,7 +19,6 @@
   border-right: none;
 }
 
-/* Compact search with icon prefix. */
 .sidebarSearch {
   position: relative;
   display: flex;
@@ -99,7 +98,6 @@
   color: var(--accent);
 }
 
-/* Material Dashboard-style filled active item: gradient red→orange + soft shadow. */
 .sidebarNavLink.active {
   background: var(--gradient-fire);
   color: #fff;

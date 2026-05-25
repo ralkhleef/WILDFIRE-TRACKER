@@ -1,4 +1,3 @@
-// Loads environment variables once and exposes friendly defaults for the application.
 const dotenv = require('dotenv');
 
 dotenv.config();

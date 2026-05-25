@@ -29,8 +29,6 @@ export default function Offline() {
   return (
     <div className="offlineShell">
       <main className="offlineMain">
-
-        {/* Status banner */}
         <div className={`offlineStatusBanner ${isOnline ? "offlineStatusBanner--online" : "offlineStatusBanner--offline"}`}>
           <span className="offlineStatusDot" />
           <span>{isOnline ? "You're back online" : "You're currently offline"}</span>
@@ -39,7 +37,6 @@ export default function Offline() {
           )}
         </div>
 
-        {/* Hero */}
         {!isOnline && (
           <div className="offlineHero">
             <div className="offlineHeroIcon">🔥</div>
@@ -51,7 +48,6 @@ export default function Offline() {
         )}
 
         <div className="offlineGrid">
-          {/* Emergency contacts — always available */}
           <section className="offlineCard offlineCard--red">
             <h2 className="offlineCardTitle">Emergency contacts</h2>
             <p className="offlineCardSub">Save these, they work without internet</p>
@@ -95,7 +91,6 @@ export default function Offline() {
             </ul>
           </section>
 
-          {/* Safety tips — always available */}
           <section className="offlineCard offlineCard--amber">
             <h2 className="offlineCardTitle">Quick safety tips</h2>
             <p className="offlineCardSub">What to do during a wildfire</p>
@@ -109,7 +104,6 @@ export default function Offline() {
             </ol>
           </section>
 
-          {/* Cached fires */}
           <section className="offlineCard offlineCard--neutral">
             <h2 className="offlineCardTitle">Last known fire data</h2>
             <p className="offlineCardSub">
@@ -136,7 +130,6 @@ export default function Offline() {
             )}
           </section>
 
-          {/* Useful links */}
           <section className="offlineCard offlineCard--neutral">
             <h2 className="offlineCardTitle">Useful links</h2>
             <p className="offlineCardSub">These may work if you have partial connectivity</p>

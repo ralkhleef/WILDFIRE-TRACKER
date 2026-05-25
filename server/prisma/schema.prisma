@@ -1,5 +1,3 @@
-// Prisma schema for the WildFire-Tracker backend.
-
 generator client {
   provider = "prisma-client-js"
 }

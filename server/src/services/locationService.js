@@ -1,8 +1,3 @@
-// Thin server-side wrappers around Google Maps Platform APIs.
-// Keeps secret-protected keys on the backend; the frontend only sees a
-// VITE_GOOGLE_MAPS_API_KEY for client-side map rendering.
-// Each function returns null / [] on failure rather than throwing so routes
-// can degrade gracefully when keys are missing.
 const env = require('../config/env');
 
 const safeFetchJson = async (url, options = {}) => {
@@ -41,7 +36,7 @@ const findNearbyResources = async ({ latitude, longitude, type = 'fire_station' 
   if (!Number.isFinite(Number(latitude)) || !Number.isFinite(Number(longitude))) return [];
   const key = env.googlePlacesApiKey;
   if (!key) return [];
-  const radius = 8000; // metres (~5 mi)
+  const radius = 8000;
   const url =
     'https://maps.googleapis.com/maps/api/place/nearbysearch/json' +
     `?location=${encodeURIComponent(`${latitude},${longitude}`)}` +

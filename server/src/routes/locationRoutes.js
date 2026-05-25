@@ -1,4 +1,3 @@
-// Geocoding / nearby resources / air-quality helpers backed by Google Maps Platform.
 const express = require('express');
 const locationController = require('../controllers/locationController');
 

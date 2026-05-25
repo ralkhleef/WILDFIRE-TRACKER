@@ -1,4 +1,3 @@
-// Configures Passport with an optional Google OAuth strategy for future auth integration.
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 

@@ -1,4 +1,3 @@
-// Formats application errors into consistent JSON responses for the frontend.
 const env = require('../config/env');
 
 const errorHandler = (error, req, res, next) => {

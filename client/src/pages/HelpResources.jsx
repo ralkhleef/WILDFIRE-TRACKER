@@ -12,7 +12,6 @@ export default function HelpResources() {
 
         <div className="helpGrid">
 
-          {/* Evacuation routes */}
           <section className="helpCard helpCard--red">
             <h2 className="helpCardTitle"> Evacuation routes</h2>
             <p className="helpCardSub">Find official evacuation routes and road closures near you</p>
@@ -40,7 +39,6 @@ export default function HelpResources() {
             </ul>
           </section>
 
-          {/* Shelters nearby */}
           <section className="helpCard helpCard--blue">
             <h2 className="helpCardTitle"> Shelters nearby</h2>
             <p className="helpCardSub">Find emergency shelters and Red Cross locations</p>
@@ -63,7 +61,6 @@ export default function HelpResources() {
             </ul>
           </section>
 
-          {/* Safety guidelines */}
           <section className="helpCard helpCard--amber">
             <h2 className="helpCardTitle"> Safety guidelines</h2>
             <p className="helpCardSub">What to do before, during, and after a wildfire</p>
@@ -77,7 +74,6 @@ export default function HelpResources() {
             </ol>
           </section>
 
-          {/* Emergency contacts */}
           <section className="helpCard helpCard--red">
             <h2 className="helpCardTitle"> Emergency contacts</h2>
             <p className="helpCardSub">Tap to call, save these offline</p>
@@ -109,7 +105,6 @@ export default function HelpResources() {
             </ul>
           </section>
 
-          {/* Air quality */}
           <section className="helpCard helpCard--neutral">
             <h2 className="helpCardTitle"> Air quality</h2>
             <p className="helpCardSub">Monitor smoke and air quality during active fires</p>
@@ -132,7 +127,6 @@ export default function HelpResources() {
             </ul>
           </section>
 
-          {/* Preparedness */}
           <section className="helpCard helpCard--neutral">
             <h2 className="helpCardTitle"> Preparedness</h2>
             <p className="helpCardSub">Get ready before a fire happens</p>

@@ -1,4 +1,3 @@
-// Handles wildfire API requests and delegates data work to the fire service layer.
 const asyncHandler = require('../utils/asyncHandler');
 const fireService = require('../services/fireService');
 
@@ -15,9 +14,7 @@ const isThermalDetection = (fire, sourceLabel) =>
   fire?.sourceType === 'satellite_hotspot' ||
   sourceLabel === 'NASA FIRMS';
 
-// Public payload shape: distinguishes official incidents from satellite thermal
-// detections. Frontend uses `displayType` for headlines and `sourceLabel` for
-// the small "Source: ..." line.
+// Keep official incidents and satellite detections clearly separated for the UI.
 const normalizeFire = (fire) => {
   if (!fire) return fire;
   const sourceLabel = normalizeSourceLabel(fire.source);
@@ -46,9 +43,6 @@ const normalizeFire = (fire) => {
     sourceType,
     label,
     demo: isDemoFire || fire.demo === true,
-    // Frontend wording rules:
-    //   confirmed CAL FIRE / seed incidents → "Official Fire Incident"
-    //   NASA FIRMS satellite detections    → "Thermal Detection"
     displayType: isThermal
       ? 'Thermal Detection'
       : isDemoFire

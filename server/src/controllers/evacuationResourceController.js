@@ -1,4 +1,3 @@
-// HTTP layer for evacuation and shelter resources.
 const asyncHandler = require('../utils/asyncHandler');
 const evacuationResourceService = require('../services/evacuationResourceService');
 

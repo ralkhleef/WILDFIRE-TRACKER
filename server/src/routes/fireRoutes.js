@@ -1,4 +1,3 @@
-// Declares wildfire data routes, including list, detail, and nearby fire lookups.
 const express = require('express');
 
 const fireController = require('../controllers/fireController');

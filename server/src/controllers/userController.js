@@ -1,4 +1,3 @@
-// Handles user profile requests and saved location management.
 const asyncHandler = require('../utils/asyncHandler');
 const userService = require('../services/userService');
 

@@ -1,4 +1,3 @@
-// Evacuation/shelter resource routes.
 const express = require('express');
 
 const evacuationResourceController = require('../controllers/evacuationResourceController');

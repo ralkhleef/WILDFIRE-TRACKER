@@ -16,7 +16,6 @@
   overflow-y: auto;
 }
 
-/* Status banner */
 .offlineStatusBanner {
   display: flex;
   align-items: center;
@@ -59,7 +58,6 @@
 
 .offlineGoLiveBtn:hover { text-decoration: underline; }
 
-/* Hero */
 .offlineHero {
   text-align: center;
   padding: 1.5rem 1rem;
@@ -86,7 +84,6 @@
   margin: 0 auto;
 }
 
-/* Grid */
 .offlineGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -99,7 +96,6 @@
   }
 }
 
-/* Cards */
 .offlineCard {
   border-radius: 14px;
   border: 1.5px solid;
@@ -137,7 +133,6 @@
   color: var(--text);
 }
 
-/* Contact list */
 .offlineContactList {
   list-style: none;
   margin: 0;
@@ -179,7 +174,6 @@
   color: #6b7280;
 }
 
-/* Tips list */
 .offlineTipsList {
   margin: 0;
   padding-left: 1.25rem;
@@ -194,7 +188,6 @@
   line-height: 1.45;
 }
 
-/* Cached fires */
 .offlineFireList {
   list-style: none;
   margin: 0;
@@ -242,7 +235,6 @@
   text-align: center;
 }
 
-/* External links */
 .offlineLinkList {
   list-style: none;
   margin: 0;

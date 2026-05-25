@@ -1,5 +1,4 @@
-// Encapsulates user signup, login, token creation, and Google OAuth account linking logic.
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const env = require('../config/env');

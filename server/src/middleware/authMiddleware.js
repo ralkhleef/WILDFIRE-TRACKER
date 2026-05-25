@@ -1,4 +1,3 @@
-// Verifies JWT access tokens and attaches the authenticated user to the request object.
 const jwt = require('jsonwebtoken');
 
 const env = require('../config/env');

@@ -30,7 +30,7 @@
   height: auto;
   aspect-ratio: 1 / 1;
   display: block;
-  margin: -10px auto -8px;   /* shave the SVG's transparent padding so the card stays tight */
+  margin: -10px auto -8px;
   object-fit: contain;
   object-position: center;
   image-rendering: -webkit-optimize-contrast;

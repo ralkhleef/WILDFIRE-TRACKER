@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "start:single": "node src/singleServer.js",
+    "dev:single": "nodemon src/singleServer.js",
     "start:gateway": "node src/gateway/server.js",
     "start:auth": "node src/microservices/authUser/server.js",
     "start:fire": "node src/microservices/fireData/server.js",
@@ -37,7 +39,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.6.0",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

@@ -1,4 +1,3 @@
-// Creates and configures the Express application for the backend API.
 const cors = require('cors');
 const express = require('express');
 
@@ -12,9 +11,7 @@ configurePassport();
 
 const app = express();
 
-// CORS: allow each origin in FRONTEND_URL (comma-separated) or fall back to
-// common Vite dev ports for local development. Same-origin/non-browser
-// requests (no Origin header) are allowed too.
+// Allow configured frontend origins and same-origin API tools.
 app.use(
   cors({
     origin: (origin, callback) => {

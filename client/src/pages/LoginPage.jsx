@@ -12,17 +12,17 @@ export default function LoginPage({ onAuthChange, onGuestContinue }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const oauthToken = searchParams.get("token");
   const oauthError = searchParams.get("error");
+  const [initialOAuthError] = useState(() => oauthError || "");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(() => oauthError || "");
   const [accountHelpMessage, setAccountHelpMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
-    if (oauthError) {
-      setError(oauthError);
-      setSearchParams({});
+    if (initialOAuthError) {
+      setSearchParams({}, { replace: true });
       return;
     }
 
@@ -31,6 +31,7 @@ export default function LoginPage({ onAuthChange, onGuestContinue }) {
     let cancelled = false;
 
     async function completeGoogleLogin() {
+      await Promise.resolve();
       setLoading(true);
       setError("");
       try {
@@ -68,7 +69,7 @@ export default function LoginPage({ onAuthChange, onGuestContinue }) {
     return () => {
       cancelled = true;
     };
-  }, [navigate, oauthError, oauthToken, onAuthChange, setSearchParams]);
+  }, [initialOAuthError, navigate, oauthToken, onAuthChange, setSearchParams]);
 
   async function handleSubmit(e) {
     e.preventDefault();

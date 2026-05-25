@@ -1,4 +1,3 @@
-// Handles profile reads, profile updates, and saved location persistence for users.
 const prisma = require('../config/prisma');
 const ApiError = require('../utils/ApiError');
 

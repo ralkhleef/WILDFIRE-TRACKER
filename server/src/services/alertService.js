@@ -1,7 +1,7 @@
-// Manages user alert preferences and creates location-based alert responses from wildfire data.
 const env = require('../config/env');
 const prisma = require('../config/prisma');
 const { sendWildfireAlertEmail } = require('./emailService');
+const fireService = require('./fireService');
 
 const isBoolean = (value) => typeof value === 'boolean';
 
@@ -24,13 +24,22 @@ const fetchNearbyFiresFromFireService = async ({ latitude, longitude, radius }) 
     includeExternal: 'true',
   });
 
-  const response = await fetch(`${env.fireServiceUrl}/api/fires/nearby?${params.toString()}`);
-  if (!response.ok) {
-    throw new Error(`Fire Data Service returned ${response.status}.`);
-  }
+  try {
+    const response = await fetch(`${env.fireServiceUrl}/api/fires/nearby?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error(`Fire Data Service returned ${response.status}.`);
+    }
 
-  const body = await response.json();
-  return Array.isArray(body?.data) ? body.data : [];
+    const body = await response.json();
+    return Array.isArray(body?.data) ? body.data : [];
+  } catch {
+    return fireService.getNearbyFires({
+      latitude,
+      longitude,
+      radius,
+      includeExternal: true,
+    });
+  }
 };
 
 const listAlertsForUser = async (userId) => {

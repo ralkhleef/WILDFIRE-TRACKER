@@ -1,8 +1,3 @@
-// California-only + last-7-days helpers used by the fire service.
-// No external geocoding service is used; region naming is a coarse offline lookup
-// against well-known county/region centroids.
-
-// California bounding box (a bit generous on the borders).
 const CA_BOUNDS = {
   minLat: 32.5,
   maxLat: 42.1,
@@ -22,17 +17,14 @@ const isInCalifornia = (latitude, longitude) => {
   );
 };
 
-// Parse a variety of possible date inputs and return a Date or null.
 const parseFireDate = (value) => {
   if (!value) return null;
   if (value instanceof Date) {
     return Number.isFinite(value.getTime()) ? value : null;
   }
-  // FIRMS gives "acq_date acq_time" (e.g. "2026-05-01 1234").
   if (typeof value === 'string') {
     let candidate = value.trim();
     if (!candidate) return null;
-    // Convert "YYYY-MM-DD HHMM" -> "YYYY-MM-DDTHH:MM:00Z"
     const firmsMatch = candidate.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{1,4})$/);
     if (firmsMatch) {
       const datePart = firmsMatch[1];
@@ -54,8 +46,7 @@ const isWithinLastDays = (value, days = 7) => {
   return d.getTime() >= cutoff;
 };
 
-// Coarse offline "what part of CA is this?" lookup.
-// Centroids are approximate and only used to render a friendlier label.
+// Approximate county labels for NASA points that only give coordinates.
 const CA_REGIONS = [
   { name: 'Del Norte County', lat: 41.74, lng: -123.95 },
   { name: 'Siskiyou County', lat: 41.59, lng: -122.54 },
@@ -124,7 +115,7 @@ const nearestCaliforniaCounty = (latitude, longitude) => {
   for (const region of CA_REGIONS) {
     const dx = region.lat - latitude;
     const dy = region.lng - longitude;
-    const d2 = dx * dx + dy * dy; // good enough for nearest-bucket
+    const d2 = dx * dx + dy * dy;
     if (d2 < bestDist) {
       bestDist = d2;
       best = region;
@@ -133,8 +124,6 @@ const nearestCaliforniaCounty = (latitude, longitude) => {
   return best ? best.name : null;
 };
 
-// Restrict an array of fire records to California + last 7 days
-// (records without a parseable date are excluded from the main feed).
 const filterCaliforniaRecent = (fires, { days = 7 } = {}) =>
   (fires || []).filter((fire) => {
     if (!isInCalifornia(Number(fire.latitude), Number(fire.longitude))) return false;

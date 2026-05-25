@@ -1,4 +1,3 @@
-// Declares alert preference routes and local alert lookup routes for authenticated users.
 const express = require('express');
 
 const alertController = require('../controllers/alertController');

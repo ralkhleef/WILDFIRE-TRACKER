@@ -1,4 +1,3 @@
-// Service for fetching and normalizing active thermal detections from NASA FIRMS.
 const env = require('../config/env');
 const {
   CA_BOUNDS,
@@ -230,7 +229,7 @@ const parseFirmsCsv = (csvText, options) => {
       };
     })
     .filter(Boolean)
-    // California-only at the source so we don't ship global thermal detections downstream.
+    // Keep the UI focused on California even if FIRMS returns wider data.
     .filter((fire) => isInCalifornia(fire.latitude, fire.longitude));
 };
 
