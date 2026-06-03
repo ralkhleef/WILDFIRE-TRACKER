@@ -17,9 +17,9 @@ const createCorsOptions = () => ({
 const createServiceApp = ({ name, routes }) => {
   const app = express();
 
-  app.use(cors(createCorsOptions()));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(cors(createCorsOptions())); // handle frontend origins (a list of frontend URLs that are allowed to access your backend through CORS.)
+  app.use(express.json()); // parse incoming json files 
+  app.use(express.urlencoded({ extended: true })); // Read data coming from html 
 
   app.use((req, res, next) => {
     console.log(`[${name}] ${req.method} ${req.originalUrl}`);

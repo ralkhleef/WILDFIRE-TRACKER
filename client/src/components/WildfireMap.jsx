@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { GoogleMap, InfoWindow, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, InfoWindow, Marker, Circle, useJsApiLoader } from "@react-google-maps/api";
 import { Info, Layers, Flame, MapPin, X } from "lucide-react";
 import "./WildfireMap.css";
 
@@ -371,7 +371,7 @@ export default function WildfireMap({
     return () => {
       cancelled = true;
     };
-  }, [demoMode, fetchFires, initialCenterValue, radius, showHotspots, showOfficial, thermalFilter, userLocation]);
+}, [demoMode, fetchFires, initialCenterValue, showHotspots, showOfficial, thermalFilter, userLocation]);
 
   useEffect(() => {
     if (!showWeatherAlerts) return undefined;
@@ -449,16 +449,30 @@ export default function WildfireMap({
   }, [onLocationChange]);
 
   const handleApplyRadius = useCallback(() => {
-    const activeCenter = userLocation || initialCenterValue || center;
-    const lat = activeCenter.lat;
-    const lng = activeCenter.lng;
-    fetchFires(lat, lng, radius, {
-      includeHotspots: showHotspots,
-      includeOfficial: showOfficial,
-      thermalFilter,
-      demo: demoMode,
+  const activeCenter = userLocation || initialCenterValue || center;
+  const lat = activeCenter?.lat ?? null;
+  const lng = activeCenter?.lng ?? null;
+  const miles = Number(radius) || 100;
+  
+  // Fetch fires with new radius
+  fetchFires(lat, lng, miles, {
+    includeHotspots: showHotspots,
+    includeOfficial: showOfficial,
+    thermalFilter,
+    demo: demoMode,
+  });
+
+  // Zoom map to fit the circle
+  if (mapRef.current && lat && lng && window.google?.maps) {
+    const bounds = new window.google.maps.LatLngBounds();
+    const circle = new window.google.maps.Circle({
+      center: { lat, lng },
+      radius: miles * 1609.34,
     });
-  }, [demoMode, fetchFires, center, initialCenterValue, radius, userLocation, showHotspots, showOfficial, thermalFilter]);
+    bounds.union(circle.getBounds());
+    mapRef.current.fitBounds(bounds);
+  }
+}, [demoMode, fetchFires, center, initialCenterValue, radius, userLocation, showHotspots, showOfficial, thermalFilter]);
 
   const handleWeatherAlertsToggle = useCallback((checked) => {
     setSelectedAlert(null);
@@ -586,6 +600,19 @@ export default function WildfireMap({
           />
         );
       }) : null}
+          {userLocation && (
+      <Circle
+        center={userLocation}
+        radius={radius * 1609.34}
+        options={{
+          fillColor: "#ef4444",
+          fillOpacity: 0.1,
+          strokeColor: "#ef4444",
+          strokeOpacity: 0.6,
+          strokeWeight: 2,
+        }}
+      />
+    )}
       {selectedFire && isValidLatLng(Number(selectedFire.latitude), Number(selectedFire.longitude)) ? (
         <InfoWindow
           position={{
@@ -798,11 +825,19 @@ export default function WildfireMap({
             <input
               id={`${title || "map"}-radius`}
               className="mapRadiusInput"
-              type="number"
-              min="1"
-              max="500"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={radius}
-              onChange={(event) => setRadius(Number(event.target.value))}
+              value={radius}
+              onChange={(event) => {
+              const val = event.target.value;
+              if (val === "") {
+                setRadius("");
+                return;
+              }
+              setRadius(Number(val));
+            }}
             />
             <button
               type="button"
@@ -861,8 +896,16 @@ export default function WildfireMap({
                   min="1"
                   max="500"
                   value={radius}
-                  onChange={(event) => setRadius(Number(event.target.value))}
-                  aria-label="Radius (miles)"
+                  onChange={(event) => {
+                  const val = event.target.value;
+                  if (val === "") {
+                    setRadius("");
+                    return;
+                  }
+                  setRadius(Number(val));
+                }}
+                aria-label="Radius (miles)"
+                  
                 />
                 <span className="mapFloatingRadiusUnit">mi</span>
               </label>
@@ -963,8 +1006,15 @@ export default function WildfireMap({
                   min="1"
                   max="500"
                   value={radius}
-                  onChange={(event) => setRadius(Number(event.target.value))}
-                  aria-label="Radius (miles)"
+                  onChange={(event) => {
+                  const val = event.target.value;
+                  if (val === "") {
+                    setRadius("");
+                    return;
+                  }
+                  setRadius(Number(val));
+                }}
+                aria-label="Radius (miles)"
                 />
                 <span className="mapFloatingRadiusUnit">mi</span>
               </label>
